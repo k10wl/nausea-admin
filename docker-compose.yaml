@@ -1,0 +1,15 @@
+version: "3.3"
+services:
+  admin:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - 8081:8081
+    volumes:
+      - ./:/app
+      - ~/.config:/.config
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /.config/gcloud/application_default_credentials.json
+      PROJECT_ID: ${PROJECT_ID}
+      PORT: ${PORT}
