@@ -5,21 +5,45 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 )
 
+type PageData struct {
+	Info Info
+}
+
 func main() {
+	projectID := os.Getenv("PROJECT_ID")
+	port := os.Getenv("PORT")
+
+	db := NewDB(projectID)
+
 	server := http.Server{
-		Addr: ":8081",
+		Addr: ":" + port,
 	}
 	t := template.Must(template.ParseFiles("view.html"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		t.ExecuteTemplate(w, "page", map[string]interface{}{})
+		info := db.GetInfo()
+		t.ExecuteTemplate(w, "page", PageData{Info: info})
 	})
 
-	fmt.Printf("Listening and serving on %s", server.Addr)
+	http.HandleFunc("/update", func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+		}
+
+		info := Info{Bio: r.FormValue("bio")}
+		fmt.Printf("info: %v\n", info)
+
+		db.WriteInfo(info)
+		t.ExecuteTemplate(w, "page", PageData{Info: info})
+	})
+
+	fmt.Printf("Listening and serving on %s\n", server.Addr)
 	err := server.ListenAndServe()
 	if err != nil {
-		log.Fatalf("FATAL SERVER ERROR: %v", err)
+		log.Fatalf("FATAL SERVER ERROR: %v\n", err)
 	}
 }

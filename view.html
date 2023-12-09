@@ -1,15 +1,80 @@
 {{define "page"}}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Nausea Admin</title>
-    <script src="https://unpkg.com/htmx.org@1.9.9" integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX" crossorigin="anonymous"></script>
+    <script
+      src="https://unpkg.com/htmx.org@1.9.9"
+      integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+      crossorigin="anonymous"
+    ></script>
+
+    <style>
+      .grow-wrap {
+        display: grid;
+      }
+      .grow-wrap::after {
+        content: attr(data-replicated-value) " ";
+        white-space: pre-wrap;
+        visibility: hidden;
+      }
+      .grow-wrap > textarea {
+        resize: none;
+        overflow: hidden;
+      }
+      .grow-wrap > textarea,
+      .grow-wrap::after {
+        border: 1px solid black;
+        padding: 0.5rem;
+        font: inherit;
+        grid-area: 1 / 1 / 2 / 2;
+      }
+
+      body {
+        margin: 2rem;
+        font:
+          1rem/1.4 system-ui,
+          sans-serif;
+      }
+
+      label {
+        display: block;
+      }
+    </style>
   </head>
   <body>
-     hi im admin
+    {{template "form" .}}
   </body>
 </html>
+{{end}}
+
+{{define "form"}}
+<form hx-post="/update" hx-swap="outerHTML">
+  <div>
+    <h2 id="table-of-contnets">
+      <a href="#table-of-contnets">#</a> Table of contents
+    </h2>
+    <ul>
+      <li><a href="#info">Info</a></li>
+    </ul>
+  </div>
+  <hr />
+  <div>
+    <h3 id="info"><a href="#info">#</a> Info</h3>
+    <label for="bio">Bio:</label>
+    <div data-replicated-value="{{.Info.Bio}}" class="grow-wrap">
+      <textarea
+        name="bio"
+        id="bio"
+        onInput="this.parentNode.dataset.replicatedValue = this.value"
+      >
+{{.Info.Bio}}</textarea
+      >
+    </div>
+  </div>
+  <button type="submit">Submit</button>
+</form>
 {{end}}
