@@ -3,14 +3,17 @@ module nausea-admin
 go 1.21.4
 
 require (
+	cloud.google.com/go/firestore v1.14.0
+	firebase.google.com/go v3.13.0+incompatible
+)
+
+require (
 	cloud.google.com/go v0.110.10 // indirect
 	cloud.google.com/go/compute v1.23.3 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	cloud.google.com/go/firestore v1.14.0 // indirect
 	cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/longrunning v0.5.4 // indirect
 	cloud.google.com/go/storage v1.35.1 // indirect
-	firebase.google.com/go v3.13.0+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
