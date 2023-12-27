@@ -13,3 +13,7 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /.config/gcloud/application_default_credentials.json
       PROJECT_ID: ${PROJECT_ID}
       PORT: ${PORT}
+      BUCKET_NAME: ${BUCKET_NAME}
+      ACCOUNT_ID: ${ACCOUNT_ID}
+      ACCESS_KEY_ID: ${ACCESS_KEY_ID}
+      ACCESS_KEY_SECRET: ${ACCESS_KEY_SECRET}
