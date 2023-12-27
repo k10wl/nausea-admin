@@ -79,7 +79,7 @@ func handleGallery(s *Server) http.HandlerFunc {
 }
 
 func handleGalleryUpload(s *Server) http.HandlerFunc {
-	return func(_ http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			fmt.Println("not a post")
 			return
@@ -91,8 +91,10 @@ func handleGalleryUpload(s *Server) http.HandlerFunc {
 		}
 		fmt.Println("received file")
 		defer file.Close()
-		s.storage.AddObject(file, header.Filename)
+		url, _ := s.storage.AddObject(file, header.Filename)
+
 		fmt.Println("created new file")
+		fmt.Fprintf(w, "<a href=\"%s\"><img src=\"%s\"></a>", url, url)
 	}
 }
 

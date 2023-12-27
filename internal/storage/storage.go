@@ -3,7 +3,7 @@ package storage
 import "io"
 
 type IStorage interface {
-	AddObject(file io.Reader, name string) error
+	AddObject(file io.Reader, name string) (string, error)
 }
 
 type Storage struct {
@@ -16,6 +16,6 @@ func NewStorage(storage IStorage) *Storage {
 	}
 }
 
-func (s *Storage) AddObject(file io.Reader, name string) error {
+func (s *Storage) AddObject(file io.Reader, name string) (string, error) {
 	return s.storage.AddObject(file, name)
 }

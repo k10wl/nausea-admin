@@ -16,8 +16,9 @@ import (
 )
 
 type Cloudflare struct {
-	client     *s3.Client
-	bucketName string
+	client           *s3.Client
+	bucketName       string
+	publicStorageUrl string
 }
 
 func NewClient() *Cloudflare {
@@ -25,6 +26,7 @@ func NewClient() *Cloudflare {
 	accountId := os.Getenv("ACCOUNT_ID")
 	accessKeyId := os.Getenv("ACCESS_KEY_ID")
 	accessKeySecret := os.Getenv("ACCESS_KEY_SECRET")
+	publicStorageUrl := os.Getenv("PUBLIC_STORAGE_URL")
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL:               fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId),
@@ -42,16 +44,17 @@ func NewClient() *Cloudflare {
 	}
 	client := s3.NewFromConfig(cfg)
 	return &Cloudflare{
-		client:     client,
-		bucketName: bucketName,
+		client:           client,
+		bucketName:       bucketName,
+		publicStorageUrl: publicStorageUrl,
 	}
 }
 
-func (c *Cloudflare) AddObject(file io.Reader, name string) error {
+func (c *Cloudflare) AddObject(file io.Reader, name string) (string, error) {
 	buf := make([]byte, 512) // 512 bytes are usually enough for MIME detection
 	n, err := io.ReadFull(file, buf)
 	if err != nil && err != io.ErrUnexpectedEOF {
-		return err
+		return "", err
 	}
 
 	contentType := http.DetectContentType(buf[:n])
@@ -60,18 +63,22 @@ func (c *Cloudflare) AddObject(file io.Reader, name string) error {
 	if s, ok := file.(io.Seeker); ok {
 		_, err = s.Seek(0, io.SeekStart)
 		if err != nil {
-			return err
+			return "", err
 		}
 		reader = file
 	} else {
 		reader = io.MultiReader(bytes.NewReader(buf[:n]), file)
 	}
 
+	key := aws.String(name)
+
 	_, err = c.client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(c.bucketName),
-		Key:         aws.String(name),
+		Key:         key,
 		Body:        reader,
 		ContentType: aws.String(contentType),
 	})
-	return err
+	url := fmt.Sprintf("%s/%s", c.publicStorageUrl, *key)
+
+	return url, err
 }
