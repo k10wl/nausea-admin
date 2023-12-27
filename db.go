@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -56,6 +57,7 @@ func (db *DB) GetInfo() Info {
 		panic(err)
 	}
 	err = doc.DataTo(&info)
+	fmt.Printf("info: %v\n", info)
 	if err != nil {
 		panic(err)
 	}

@@ -1,0 +1,55 @@
+{{define "head"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>{{if .Title}}{{.Title}}{{else}}Nausea admin{{end}}</title>
+    <link rel="stylesheet" href="/assets/main.css" />
+    <script
+      src="https://unpkg.com/htmx.org@1.9.9"
+      integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div id="app">
+      <aside>
+        <nav hx-boost="true">
+          <ul>
+            <a href="/">
+              <li {{if eq .PageMeta.ActiveRoute "/"}}class="nav-active"{{end}}>
+                Stats
+              </li>
+            </a>
+            <a href="/about">
+              <li {{if eq .PageMeta.ActiveRoute "/about"}}class="nav-active"{{end}}>
+                About
+              </li>
+            </a>
+            <a href="/gallery">
+              <li {{if eq .PageMeta.ActiveRoute "/gallery"}}class="nav-active"{{end}}>
+                Gallery
+              </li>
+            </a>
+            <a href="/contacts">
+              <li {{if eq .PageMeta.ActiveRoute "/contacts"}}class="nav-active"{{end}}>
+                Contacts
+              </li>
+            </a>
+          </ul>
+        </nav>
+      </aside>
+      <main>{{end}}{{define "tail"}}</main>
+    </div>
+  </body>
+</html>
+{{end}}
+
+
+{{define "fallback"}}
+{{template "head" .}}
+<h2>This page does not exist</h2>
+{{template "tail"}}
+{{end}}

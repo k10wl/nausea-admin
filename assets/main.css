@@ -1,0 +1,47 @@
+body {
+  margin: 0;
+  font:
+    1rem/1.4 system-ui,
+    sans-serif;
+  height: 100dvh;
+  height: 100vh;
+}
+
+label {
+  display: block;
+}
+
+#app {
+  display: grid;
+  grid-template-columns: 20rem 1fr;
+  gap: 1rem;
+}
+
+.paper {
+  border-radius: 2rem;
+  padding: 1rem;
+}
+
+.nav-active {
+  border: solid red;
+}
+
+.grow-wrap {
+  display: grid;
+}
+.grow-wrap::after {
+  content: attr(data-replicated-value) " ";
+  white-space: pre-wrap;
+  visibility: hidden;
+}
+.grow-wrap > textarea {
+  resize: none;
+  overflow: hidden;
+}
+.grow-wrap > textarea,
+.grow-wrap::after {
+  border: 1px solid black;
+  padding: 0.5rem;
+  font: inherit;
+  grid-area: 1 / 1 / 2 / 2;
+}

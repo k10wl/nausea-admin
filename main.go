@@ -1,49 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
-	"net/http"
 	"os"
-)
 
-type PageData struct {
-	Info Info
-}
+	"nausea-admin/internal/cloudflare"
+	"nausea-admin/internal/storage"
+)
 
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	port := os.Getenv("PORT")
 
 	db := NewDB(projectID)
+	t := template.Must(template.ParseGlob("views/**"))
 
-	server := http.Server{
-		Addr: ":" + port,
-	}
-	t := template.Must(template.ParseFiles("view.html"))
+	c := cloudflare.NewClient()
+	storage := storage.NewStorage(c)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		info := db.GetInfo()
-		t.ExecuteTemplate(w, "page", PageData{Info: info})
-	})
-
-	http.HandleFunc("/update", func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			fmt.Fprint(w, err.Error())
-		}
-
-		info := Info{Bio: r.FormValue("bio")}
-		fmt.Printf("info: %v\n", info)
-
-		db.WriteInfo(info)
-		t.ExecuteTemplate(w, "page", PageData{Info: info})
-	})
-
-	fmt.Printf("Listening and serving on %s\n", server.Addr)
-	err := server.ListenAndServe()
-	if err != nil {
+	s := NewServer(":"+port, db, t, storage)
+	if err := s.Run(); err != nil {
 		log.Fatalf("FATAL SERVER ERROR: %v\n", err)
 	}
 }
