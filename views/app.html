@@ -14,27 +14,27 @@
     ></script>
   </head>
   <body>
-    <div id="app">
-      <aside>
+    <div id="app" class="p-md gap-md text-black bg-base h-full">
+      <aside class="paper border">
         <nav hx-boost="true">
-          <ul>
-            <a href="/">
-              <li {{if eq .PageMeta.ActiveRoute "/"}}class="nav-active"{{end}}>
+          <ul class="grid gap-md">
+            <a class="border border-sm p-md clickable {{if eq .PageMeta.ActiveRoute "/"}}bg-primary text-white{{end}}" href="/">
+              <li>
                 Stats
               </li>
             </a>
-            <a href="/about">
-              <li {{if eq .PageMeta.ActiveRoute "/about"}}class="nav-active"{{end}}>
+            <a class="border border-sm p-md clickable {{if eq .PageMeta.ActiveRoute "/about"}}bg-primary text-white{{end}}" href="/about">
+              <li>
                 About
               </li>
             </a>
-            <a href="/gallery">
-              <li {{if eq .PageMeta.ActiveRoute "/gallery"}}class="nav-active"{{end}}>
+            <a class="border border-sm p-md clickable {{if eq .PageMeta.ActiveRoute "/gallery"}}bg-primary text-white{{end}}" href="/gallery">
+              <li>
                 Gallery
               </li>
             </a>
-            <a href="/contacts">
-              <li {{if eq .PageMeta.ActiveRoute "/contacts"}}class="nav-active"{{end}}>
+            <a class="border border-sm p-md clickable {{if eq .PageMeta.ActiveRoute "/contacts"}}bg-primary text-white{{end}}" href="/contacts">
+              <li>
                 Contacts
               </li>
             </a>

@@ -1,47 +1,79 @@
-body {
-  margin: 0;
-  font:
-    1rem/1.4 system-ui,
-    sans-serif;
-  height: 100dvh;
-  height: 100vh;
-}
+@import 'reset.css';
 
-label {
-  display: block;
+:root {
+  --color-base: #FFF5EA;
+  --color-primary: #9747FF;
+  --color-accent: #FFFB47;
+  --color-white: #FFF;
+  --color-black: #000;
+
+  --size-sm: 0.1rem;
+  --size-md: 0.5rem;
 }
 
 #app {
   display: grid;
   grid-template-columns: 20rem 1fr;
-  gap: 1rem;
+}
+
+.border {
+  border: var(--size-md) solid var(--color-black);
+}
+
+.border-sm {
+  border-width: var(--size-sm);
+}
+
+.text-white {
+  color: var(--color-white);
+}
+
+.text-black {
+  color: var(--color-black);
+}
+
+.bg-base {
+  background: var(--color-base);
+}
+
+.bg-primary {
+  background: var(--color-primary);
+}
+
+.bg-accent {
+  background: var(--color-accent);
+}
+
+.clickable:hover {
+  color: var(--color-black);
+  background: var(--color-accent);
 }
 
 .paper {
-  border-radius: 2rem;
-  padding: 1rem;
+  background: var(--color-white);
+  padding: var(--size-md);
 }
 
-.nav-active {
-  border: solid red;
-}
-
-.grow-wrap {
+.grid {
   display: grid;
 }
-.grow-wrap::after {
-  content: attr(data-replicated-value) " ";
-  white-space: pre-wrap;
-  visibility: hidden;
+
+.flex {
+  display: flex;
 }
-.grow-wrap > textarea {
-  resize: none;
-  overflow: hidden;
+
+.flex-col {
+  flex-direction: column;
 }
-.grow-wrap > textarea,
-.grow-wrap::after {
-  border: 1px solid black;
-  padding: 0.5rem;
-  font: inherit;
-  grid-area: 1 / 1 / 2 / 2;
+
+.gap-md {
+  gap: var(--size-md);
+}
+
+.p-md {
+  padding: var(--size-md);
+}
+
+.h-full {
+  height: 100%;
 }
