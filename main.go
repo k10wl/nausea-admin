@@ -8,6 +8,7 @@ import (
 	"nausea-admin/internal/cloudflare"
 	"nausea-admin/internal/db"
 	"nausea-admin/internal/firestore"
+	"nausea-admin/internal/server"
 	"nausea-admin/internal/storage"
 )
 
@@ -23,7 +24,7 @@ func main() {
 	c := cloudflare.NewClient()
 	storage := storage.NewStorage(c)
 
-	s := NewServer(":"+port, db, t, storage)
+	s := server.NewServer(":"+port, db, t, storage)
 	if err := s.Run(); err != nil {
 		log.Fatalf("FATAL SERVER ERROR: %v\n", err)
 	}
