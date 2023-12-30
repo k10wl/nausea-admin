@@ -1,8 +1,9 @@
-package main
+package firestore
 
 import (
 	"context"
-	"fmt"
+
+	"nausea-admin/internal/models"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -11,14 +12,6 @@ import (
 type Firestore struct {
 	client *firestore.Client
 	ctx    context.Context
-}
-
-type Info struct {
-	Bio string `firestore:"bio"`
-}
-
-type DB struct {
-	firestore *Firestore
 }
 
 func NewFirestoreClient(projectID string) *Firestore {
@@ -39,32 +32,21 @@ func NewFirestoreClient(projectID string) *Firestore {
 	}
 }
 
-func NewDB(projectID string) *DB {
-	firestore := NewFirestoreClient(projectID)
-	return &DB{
-		firestore: firestore,
-	}
-}
-
 func (f *Firestore) docInfo() *firestore.DocumentRef {
 	return f.client.Doc("about/info")
 }
 
-func (db *DB) GetInfo() Info {
-	var info Info
-	doc, err := db.firestore.docInfo().Get(db.firestore.ctx)
+func (f *Firestore) GetInfo() (*models.Info, error) {
+	var info models.Info
+	doc, err := f.docInfo().Get(f.ctx)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	err = doc.DataTo(&info)
-	fmt.Printf("info: %v\n", info)
-	if err != nil {
-		panic(err)
-	}
-	return info
+	return &info, err
 }
 
-func (db *DB) WriteInfo(info Info) error {
-	_, err := db.firestore.docInfo().Set(db.firestore.ctx, info)
+func (f *Firestore) WriteInfo(info models.Info) error {
+	_, err := f.docInfo().Set(f.ctx, info)
 	return err
 }

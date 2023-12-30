@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"nausea-admin/internal/cloudflare"
+	"nausea-admin/internal/db"
+	"nausea-admin/internal/firestore"
 	"nausea-admin/internal/storage"
 )
 
@@ -13,7 +15,9 @@ func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	port := os.Getenv("PORT")
 
-	db := NewDB(projectID)
+	f := firestore.NewFirestoreClient(projectID)
+	db := db.NewDB(f)
+
 	t := template.Must(template.ParseGlob("views/**"))
 
 	c := cloudflare.NewClient()

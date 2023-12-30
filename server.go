@@ -5,19 +5,21 @@ import (
 	"html/template"
 	"net/http"
 
+	"nausea-admin/internal/db"
+	"nausea-admin/internal/models"
 	"nausea-admin/internal/storage"
 )
 
 type Server struct {
 	addr    string
-	db      *DB
+	db      *db.DB
 	t       *template.Template
 	storage *storage.Storage
 }
 
 type PageData struct {
 	PageMeta
-	Info Info
+	Info models.Info
 }
 
 type PageMeta struct {
@@ -25,7 +27,7 @@ type PageMeta struct {
 	Title       string
 }
 
-func NewServer(addr string, db *DB, t *template.Template, storage *storage.Storage) *Server {
+func NewServer(addr string, db *db.DB, t *template.Template, storage *storage.Storage) *Server {
 	return &Server{
 		addr:    addr,
 		db:      db,
@@ -59,9 +61,9 @@ func handleHome(s *Server) http.HandlerFunc {
 			s.t.ExecuteTemplate(w, "fallback", PageData{PageMeta: pageMeta(r)})
 			return
 		}
-		info := s.db.GetInfo()
+		info, _ := s.db.GetInfo()
 		pd := PageData{
-			Info:     info,
+			Info:     *info,
 			PageMeta: pageMeta(r),
 		}
 		s.t.ExecuteTemplate(w, "home", pd)
@@ -104,7 +106,7 @@ func handleBioUpdate(s *Server) http.HandlerFunc {
 		if err != nil {
 			fmt.Fprint(w, err.Error())
 		}
-		info := Info{Bio: r.FormValue("bio")}
+		info := models.Info{Bio: r.FormValue("bio")}
 		s.db.WriteInfo(info)
 		s.t.ExecuteTemplate(w, "home", PageData{Info: info})
 	}
