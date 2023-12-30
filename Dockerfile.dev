@@ -5,6 +5,7 @@ WORKDIR /app
 
 RUN go install github.com/cosmtrek/air@latest
 
+RUN rm -rf /tmp
 RUN mkdir -p /tmp
 
 COPY go.mod go.sum ./
