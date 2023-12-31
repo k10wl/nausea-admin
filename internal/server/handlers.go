@@ -7,22 +7,49 @@ import (
 	"nausea-admin/internal/models"
 )
 
+type LazyLoad struct {
+	URL string
+}
+
+type FormTemplate struct {
+	Name          string
+	FormSubmitURL string
+	Value         string
+}
+
+type PageData struct {
+	PageMeta
+	Forms []FormTemplate
+	Lazy  []LazyLoad
+}
+
+type PageMeta struct {
+	ActiveRoute string
+	Title       string
+}
+
 func handleAboutPage(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.RequestURI != "/" {
 			s.t.ExecuteTemplate(w, "/404", PageData{PageMeta: pageMeta(r)})
 			return
 		}
+		pd := PageData{
+			PageMeta: pageMeta(r),
+			Lazy:     []LazyLoad{{"/about/bio"}},
+		}
+		s.executeTemplate(w, r.URL.Path, pd)
+	}
+}
+
+func handleAboutBio(s *Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		info, err := s.db.GetInfo()
 		if err != nil {
 			errorResponse(w, r, http.StatusInternalServerError)
 			return
 		}
-		pd := PageData{
-			Info:     *info,
-			PageMeta: pageMeta(r),
-		}
-		s.executeTemplate(w, r.URL.Path, pd)
+		s.executeTemplate(w, "form", FormTemplate{Name: "Bio", FormSubmitURL: "/about/update", Value: info.Bio})
 	}
 }
 
@@ -54,20 +81,24 @@ func handleGalleryUpload(s *Server) http.HandlerFunc {
 }
 
 // XXX actually this is about update
-func handleBioUpdate(s *Server) http.HandlerFunc {
+func handleAboutUpdate(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
 			errorResponse(w, r, http.StatusBadRequest)
 			return
 		}
-		info := models.Info{Bio: r.FormValue("bio")}
+		info := models.Info{Bio: r.FormValue("Bio")}
 		err = s.db.WriteInfo(info)
 		if err != nil {
 			errorResponse(w, r, http.StatusInternalServerError)
 			return
 		}
-		pd := PageData{Info: info}
-		s.executeTemplate(w, r.URL.Path, pd)
+		fmt.Printf("info.Bio: %v\n", info.Bio)
+		s.executeTemplate(
+			w,
+			"form",
+			FormTemplate{Name: "Bio", FormSubmitURL: r.URL.Path, Value: info.Bio},
+		)
 	}
 }

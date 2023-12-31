@@ -48,3 +48,21 @@
 <h2>This page does not exist</h2>
 {{template "tail"}}
 {{end}}
+
+
+{{define "lazy wrapper"}}
+<div hx-get="{{.URL}}" hx-trigger="load once" hx-swap="outerHTML">...loading</div>
+{{end}}
+
+
+{{define "form"}}
+<form hx-post="{{.FormSubmitURL}}" hx-swap="outerHTML">
+  <label for="{{.Name}}">{{.Name}}</label>
+  <textarea
+    name="{{.Name}}"
+    id="{{.Name}}"
+    >{{.Value}}</textarea>
+  <button type="submit">Submit</button>
+</form>
+{{end}}
+
