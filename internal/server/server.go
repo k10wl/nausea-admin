@@ -31,6 +31,14 @@ func (s *Server) Run() error {
 	http.HandleFunc("/", logger(allowGET(handleAboutPage(s))))
 	http.HandleFunc("/about/bio", logger(allowGET(handleAboutBio(s))))
 	http.HandleFunc("/about/update", logger(allowPOST(handleAboutUpdate(s))))
+
+	// holy-moly this api endpoints look horrific AF
+	http.HandleFunc("/contacts", logger(allowGET(handleContactsPage(s))))
+	http.HandleFunc("/contacts/data", logger(allowGET(handleContactsData(s))))
+	http.HandleFunc("/contacts/update/email", logger(allowPOST(handleEmailUpdate(s))))
+	http.HandleFunc("/contacts/update/link", logger(allowPOST(handleLinkUpdate(s))))
+	http.HandleFunc("/contacts/delete/link", logger(allowPOST(handleLinkDelete(s))))
+
 	http.HandleFunc("/gallery", logger(allowGET(handleGalleryPage(s))))
 	http.HandleFunc("/gallery/upload", logger(allowPOST(handleGalleryUpload(s))))
 

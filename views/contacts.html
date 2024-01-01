@@ -1,0 +1,47 @@
+{{define "/contacts"}}
+{{template "head" .}}
+
+{{range .Lazy}}
+  {{template "lazy wrapper" .}}
+{{end}}
+
+{{template "tail"}}
+{{end}}
+
+
+{{define "contacts lazy"}}
+{{range .Forms}}
+  {{template "form" .}}
+{{end}}
+{{range .Links}}
+  {{template "contacts link" .}}
+{{end}}
+{{template "contacts link"}}
+{{end}}
+
+
+{{define "contacts link"}}
+<form 
+  class="border border-sm p-md" 
+  hx-post="/contacts/update/link" 
+  hx-swap="{{if .ID}}outerHTML{{else}}beforebegin{{end}}"
+  {{if not .ID}}htmx:afterRequest="console.log(this)"{{end}}
+   hx-on::after-request="this.reset()"
+   >
+  {{if .ID}}<input type="hidden" name="ID" value="{{.ID}}" readonly>{{end}}
+  <div>
+    <label>
+      Text
+      <input name="Text" value="{{.Text}}">
+    </label>
+  </div>
+  <div>
+    <label>
+      URL
+      <input name="URL" value="{{.URL}}">
+    </label>
+  </div>
+  <button>{{if .ID}}Update{{else}}Create{{end}}</button>
+  {{if .ID}}<button hx-post="/contacts/delete/link" hx-swap="delete" hx-target="closest form">Delete</button>{{end}}
+</form>
+{{end}}

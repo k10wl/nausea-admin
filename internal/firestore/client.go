@@ -3,8 +3,6 @@ package firestore
 import (
 	"context"
 
-	"nausea-admin/internal/models"
-
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 )
@@ -32,21 +30,14 @@ func NewFirestoreClient(projectID string) *Firestore {
 	}
 }
 
-func (f *Firestore) docInfo() *firestore.DocumentRef {
-	return f.client.Doc("about/info")
+func (f *Firestore) docAbout() *firestore.DocumentRef {
+	return f.client.Doc("data/about")
 }
 
-func (f *Firestore) GetInfo() (*models.Info, error) {
-	var info models.Info
-	doc, err := f.docInfo().Get(f.ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = doc.DataTo(&info)
-	return &info, err
+func (f *Firestore) docContacts() *firestore.DocumentRef {
+	return f.client.Doc("data/contacts")
 }
 
-func (f *Firestore) WriteInfo(info models.Info) error {
-	_, err := f.docInfo().Set(f.ctx, info)
-	return err
+func (f *Firestore) colLinks() *firestore.CollectionRef {
+	return f.client.Collection("links")
 }

@@ -14,7 +14,7 @@ func pageMeta(r *http.Request) PageMeta {
 func allowGET(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
-			errorResponse(w, r, http.StatusMethodNotAllowed)
+			errorResponse(w, r, http.StatusMethodNotAllowed, nil)
 			return
 		}
 		handler(w, r)
@@ -24,15 +24,15 @@ func allowGET(handler http.HandlerFunc) http.HandlerFunc {
 func allowPOST(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			errorResponse(w, r, http.StatusMethodNotAllowed)
+			errorResponse(w, r, http.StatusMethodNotAllowed, nil)
 			return
 		}
 		handler(w, r)
 	}
 }
 
-func errorResponse(w http.ResponseWriter, r *http.Request, code int) {
-	log.Printf("Error in request: %s %s --- %d: %s", r.Method, r.URL.Path, code, http.StatusText(code))
+func errorResponse(w http.ResponseWriter, r *http.Request, code int, e error) {
+	log.Printf("Error in request: %s %s --- %d: %s --- Error: %s", r.Method, r.URL.Path, code, http.StatusText(code), e)
 	http.Error(w, http.StatusText(code), code)
 }
 
