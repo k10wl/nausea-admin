@@ -59,15 +59,16 @@ func (f *Firestore) GetLinks() ([]models.Link, error) {
 	return links, err
 }
 
+func (f *Firestore) CreateLink(l models.Link) (models.Link, error) {
+	ref, _, err := f.colLinks().Add(f.ctx, linkToFirestoreLink(l))
+	return models.Link{
+		ID:   ref.ID,
+		URL:  l.URL,
+		Text: l.Text,
+	}, err
+}
+
 func (f *Firestore) SetLink(l models.Link) (models.Link, error) {
-	if l.ID == "" {
-		ref, _, err := f.colLinks().Add(f.ctx, linkToFirestoreLink(l))
-		return models.Link{
-			ID:   ref.ID,
-			URL:  l.URL,
-			Text: l.Text,
-		}, err
-	}
 	_, err := f.colLinks().Doc(l.ID).Set(f.ctx, linkToFirestoreLink(l))
 	return l, err
 }

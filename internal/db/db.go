@@ -10,6 +10,7 @@ type IDB interface {
 	SetEmail(string) error
 
 	GetLinks() ([]models.Link, error)
+	CreateLink(models.Link) (models.Link, error)
 	SetLink(models.Link) (models.Link, error)
 	DeleteLink(string) error
 }
@@ -42,6 +43,10 @@ func (db *DB) SetEmail(b string) error {
 
 func (db *DB) GetLinks() ([]models.Link, error) {
 	return db.client.GetLinks()
+}
+
+func (db *DB) CreateLink(l models.Link) (models.Link, error) {
+	return db.client.CreateLink(l)
 }
 
 func (db *DB) SetLink(l models.Link) (models.Link, error) {

@@ -56,7 +56,7 @@
 
 
 {{define "form"}}
-<form hx-post="{{.FormSubmitURL}}" hx-swap="outerHTML">
+<form hx-{{.Method}}="{{.FormSubmitURL}}" hx-swap="outerHTML">
   <label for="{{.Name}}">{{.Name}}</label>
   <textarea
     name="{{.Name}}"

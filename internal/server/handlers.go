@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"nausea-admin/internal/models"
+
+	"github.com/gorilla/mux"
 )
 
 type LazyLoad struct {
@@ -15,6 +17,7 @@ type FormTemplate struct {
 	Name          string
 	FormSubmitURL string
 	Value         string
+	Method        string
 }
 
 type EmailTemplate string
@@ -45,7 +48,7 @@ func handleAboutPage(s *Server) http.HandlerFunc {
 		}
 		pd := PageData{
 			PageMeta: pageMeta(r),
-			Lazy:     []LazyLoad{{"/about/bio"}},
+			Lazy:     []LazyLoad{{"/lazy"}},
 		}
 		s.executeTemplate(w, r.URL.Path, pd)
 	}
@@ -61,7 +64,7 @@ func handleAboutBio(s *Server) http.HandlerFunc {
 		s.executeTemplate(
 			w,
 			"form",
-			FormTemplate{Name: "Bio", FormSubmitURL: "/about/update", Value: bio},
+			FormTemplate{Name: "Bio", FormSubmitURL: "/", Value: bio, Method: "post"},
 		)
 	}
 }
@@ -82,7 +85,7 @@ func handleAboutUpdate(s *Server) http.HandlerFunc {
 		s.executeTemplate(
 			w,
 			"form",
-			FormTemplate{Name: "Bio", FormSubmitURL: r.URL.Path, Value: bio},
+			FormTemplate{Name: "Bio", FormSubmitURL: r.URL.Path, Value: bio, Method: "post"},
 		)
 	}
 }
@@ -118,13 +121,13 @@ func handleContactsPage(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		pd := PageData{
 			PageMeta: pageMeta(r),
-			Lazy:     []LazyLoad{{"/contacts/data"}},
+			Lazy:     []LazyLoad{{"/contacts/lazy"}},
 		}
 		s.executeTemplate(w, r.URL.Path, pd)
 	}
 }
 
-func handleContactsData(s *Server) http.HandlerFunc {
+func handleContactsLazy(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var email string
 		var links []models.Link
@@ -140,7 +143,6 @@ func handleContactsData(s *Server) http.HandlerFunc {
 			}
 			emailChan <- e
 		}()
-
 		go func() {
 			l, err := s.db.GetLinks()
 			if err != nil {
@@ -159,7 +161,6 @@ func handleContactsData(s *Server) http.HandlerFunc {
 			case e := <-errChan:
 				err = e
 				break outer
-
 			}
 		}
 		if err != nil {
@@ -174,7 +175,8 @@ func handleContactsData(s *Server) http.HandlerFunc {
 				{
 					Name:          "Email",
 					Value:         email,
-					FormSubmitURL: "/contacts/update/email",
+					FormSubmitURL: "/contacts/email",
+					Method:        "patch",
 				},
 			},
 			Links: urlTemplates,
@@ -183,7 +185,7 @@ func handleContactsData(s *Server) http.HandlerFunc {
 	}
 }
 
-func handleEmailUpdate(s *Server) http.HandlerFunc {
+func handleEmailPatch(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
@@ -199,21 +201,47 @@ func handleEmailUpdate(s *Server) http.HandlerFunc {
 		pd := FormTemplate{
 			Name:          "Email",
 			Value:         email,
-			FormSubmitURL: "/contacts/update",
+			FormSubmitURL: "/contacts/email",
+			Method:        "patch",
 		}
 		s.executeTemplate(w, "form", pd)
 	}
 }
 
-func handleLinkUpdate(s *Server) http.HandlerFunc {
+func handleLinkPost(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
 			errorResponse(w, r, http.StatusBadRequest, err)
 			return
 		}
+		link, err := s.db.CreateLink(models.Link{
+			URL:  r.FormValue("URL"),
+			Text: r.FormValue("Text"),
+		})
+		if err != nil {
+			errorResponse(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		pd := UrlTemplate{
+			ID:   link.ID,
+			URL:  link.URL,
+			Text: link.Text,
+		}
+		s.executeTemplate(w, "contacts link", pd)
+	}
+}
+
+func handleLinkPut(s *Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		vars := mux.Vars(r)
+		if err != nil {
+			errorResponse(w, r, http.StatusBadRequest, err)
+			return
+		}
 		link := models.Link{
-			ID:   r.FormValue("ID"),
+			ID:   vars["id"],
 			URL:  r.FormValue("URL"),
 			Text: r.FormValue("Text"),
 		}
@@ -233,16 +261,8 @@ func handleLinkUpdate(s *Server) http.HandlerFunc {
 
 func handleLinkDelete(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			errorResponse(w, r, http.StatusBadRequest, err)
-			return
-		}
-		link := models.Link{
-			ID: r.FormValue("ID"),
-		}
-
-		err = s.db.DeleteLink(link.ID)
+		vars := mux.Vars(r)
+		err := s.db.DeleteLink(vars["id"])
 		if err != nil {
 			errorResponse(w, r, http.StatusInternalServerError, err)
 			return

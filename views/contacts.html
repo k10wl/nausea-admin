@@ -23,12 +23,10 @@
 {{define "contacts link"}}
 <form 
   class="border border-sm p-md" 
-  hx-post="/contacts/update/link" 
+  {{if .ID}}hx-put="/contacts/links/{{.ID}}"{{else}}hx-post="/contacts/links"{{end}}
   hx-swap="{{if .ID}}outerHTML{{else}}beforebegin{{end}}"
-  {{if not .ID}}htmx:afterRequest="console.log(this)"{{end}}
-   hx-on::after-request="this.reset()"
-   >
-  {{if .ID}}<input type="hidden" name="ID" value="{{.ID}}" readonly>{{end}}
+  hx-on::after-request="this.reset()"
+  >
   <div>
     <label>
       Text
@@ -42,6 +40,6 @@
     </label>
   </div>
   <button>{{if .ID}}Update{{else}}Create{{end}}</button>
-  {{if .ID}}<button hx-post="/contacts/delete/link" hx-swap="delete" hx-target="closest form">Delete</button>{{end}}
+  {{if .ID}}<button hx-delete="/contacts/links/{{.ID}}" hx-swap="delete" hx-target="closest form">Delete</button>{{end}}
 </form>
 {{end}}

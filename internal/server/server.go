@@ -7,6 +7,8 @@ import (
 
 	"nausea-admin/internal/db"
 	"nausea-admin/internal/storage"
+
+	"github.com/gorilla/mux"
 )
 
 type Server struct {
@@ -26,23 +28,29 @@ func NewServer(addr string, db *db.DB, t *template.Template, storage *storage.St
 }
 
 func (s *Server) Run() error {
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	r := mux.NewRouter()
 
-	http.HandleFunc("/", logger(allowGET(handleAboutPage(s))))
-	http.HandleFunc("/about/bio", logger(allowGET(handleAboutBio(s))))
-	http.HandleFunc("/about/update", logger(allowPOST(handleAboutUpdate(s))))
+	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	r.Use(logger)
 
-	// holy-moly this api endpoints look horrific AF
-	http.HandleFunc("/contacts", logger(allowGET(handleContactsPage(s))))
-	http.HandleFunc("/contacts/data", logger(allowGET(handleContactsData(s))))
-	http.HandleFunc("/contacts/update/email", logger(allowPOST(handleEmailUpdate(s))))
-	http.HandleFunc("/contacts/update/link", logger(allowPOST(handleLinkUpdate(s))))
-	http.HandleFunc("/contacts/delete/link", logger(allowPOST(handleLinkDelete(s))))
+	r.HandleFunc("/", handleAboutPage(s)).Methods(http.MethodGet)
+	r.HandleFunc("/", handleAboutUpdate(s)).Methods(http.MethodPost)
+	r.HandleFunc("/lazy", handleAboutBio(s)).Methods(http.MethodGet)
 
-	http.HandleFunc("/gallery", logger(allowGET(handleGalleryPage(s))))
-	http.HandleFunc("/gallery/upload", logger(allowPOST(handleGalleryUpload(s))))
+	r.HandleFunc("/contacts", handleContactsPage(s)).Methods(http.MethodGet)
+	r.HandleFunc("/contacts/lazy", handleContactsLazy(s)).Methods(http.MethodGet)
+	r.HandleFunc("/contacts/email", handleEmailPatch(s)).Methods(http.MethodPatch)
+	r.HandleFunc("/contacts/links", handleLinkPost(s)).Methods(http.MethodPost)
+	r.HandleFunc("/contacts/links/{id}", handleLinkPut(s)).Methods(http.MethodPut)
+	r.HandleFunc("/contacts/links/{id}", handleLinkDelete(s)).Methods(http.MethodDelete)
 
+	r.HandleFunc("/gallery", handleGalleryPage(s)).Methods(http.MethodGet)
+	// TODO rework this handler, bad url
+	r.HandleFunc("/gallery/upload", handleGalleryUpload(s)).Methods(http.MethodGet)
+
+	http.Handle("/", r)
 	log.Printf("Listening and serving on %s\n", s.addr)
+
 	return http.ListenAndServe(s.addr, nil)
 }
 
