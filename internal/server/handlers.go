@@ -126,11 +126,42 @@ func handleContactsPage(s *Server) http.HandlerFunc {
 
 func handleContactsData(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		email, err := s.db.GetEmail()
-		if err != nil {
-			errorResponse(w, r, http.StatusInternalServerError, err)
+		var email string
+		var links []models.Link
+		var err error
+		emailChan := make(chan string)
+		linksChan := make(chan []models.Link)
+		errChan := make(chan error)
+		go func() {
+			e, err := s.db.GetEmail()
+			if err != nil {
+				errChan <- err
+				return
+			}
+			emailChan <- e
+		}()
+
+		go func() {
+			l, err := s.db.GetLinks()
+			if err != nil {
+				errChan <- err
+				return
+			}
+			linksChan <- l
+		}()
+	outer:
+		for i := 0; i < 2; i++ {
+			select {
+			case e := <-emailChan:
+				email = e
+			case l := <-linksChan:
+				links = l
+			case e := <-errChan:
+				err = e
+				break outer
+
+			}
 		}
-		links, err := s.db.GetLinks()
 		if err != nil {
 			errorResponse(w, r, http.StatusInternalServerError, err)
 		}
