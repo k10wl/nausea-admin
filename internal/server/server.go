@@ -34,19 +34,19 @@ func (s *Server) Run() error {
 	r.Use(logger)
 
 	r.HandleFunc("/", handleAboutPage(s)).Methods(http.MethodGet)
-	r.HandleFunc("/", handleAboutUpdate(s)).Methods(http.MethodPost)
 	r.HandleFunc("/lazy", handleAboutBio(s)).Methods(http.MethodGet)
+	r.HandleFunc("/", handleAboutPatch(s)).Methods(http.MethodPatch)
 
 	r.HandleFunc("/contacts", handleContactsPage(s)).Methods(http.MethodGet)
 	r.HandleFunc("/contacts/lazy", handleContactsLazy(s)).Methods(http.MethodGet)
 	r.HandleFunc("/contacts/email", handleEmailPatch(s)).Methods(http.MethodPatch)
 	r.HandleFunc("/contacts/links", handleLinkPost(s)).Methods(http.MethodPost)
-	r.HandleFunc("/contacts/links/{id}", handleLinkPut(s)).Methods(http.MethodPut)
+	r.HandleFunc("/contacts/links/{id}", handleLinkPatch(s)).Methods(http.MethodPatch)
 	r.HandleFunc("/contacts/links/{id}", handleLinkDelete(s)).Methods(http.MethodDelete)
 
 	r.HandleFunc("/gallery", handleGalleryPage(s)).Methods(http.MethodGet)
 	// TODO rework this handler, bad url
-	r.HandleFunc("/gallery/upload", handleGalleryUpload(s)).Methods(http.MethodGet)
+	r.HandleFunc("/gallery", handleGalleryUpload(s)).Methods(http.MethodPost)
 
 	http.Handle("/", r)
 	log.Printf("Listening and serving on %s\n", s.addr)

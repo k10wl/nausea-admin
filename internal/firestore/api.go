@@ -69,7 +69,11 @@ func (f *Firestore) CreateLink(l models.Link) (models.Link, error) {
 }
 
 func (f *Firestore) SetLink(l models.Link) (models.Link, error) {
-	_, err := f.colLinks().Doc(l.ID).Set(f.ctx, linkToFirestoreLink(l))
+	u, err := structToUpdate(l)
+	if err != nil {
+		return models.Link{}, err
+	}
+	_, err = f.colLinks().Doc(l.ID).Update(f.ctx, *u)
 	return l, err
 }
 

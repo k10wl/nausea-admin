@@ -23,7 +23,7 @@
 {{define "contacts link"}}
 <form 
   class="border border-sm p-md" 
-  {{if .ID}}hx-put="/contacts/links/{{.ID}}"{{else}}hx-post="/contacts/links"{{end}}
+  {{if .ID}}hx-patch="/contacts/links/{{.ID}}"{{else}}hx-post="/contacts/links"{{end}}
   hx-swap="{{if .ID}}outerHTML{{else}}beforebegin{{end}}"
   hx-on::after-request="this.reset()"
   >

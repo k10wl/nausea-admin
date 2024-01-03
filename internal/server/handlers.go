@@ -64,12 +64,12 @@ func handleAboutBio(s *Server) http.HandlerFunc {
 		s.executeTemplate(
 			w,
 			"form",
-			FormTemplate{Name: "Bio", FormSubmitURL: "/", Value: bio, Method: "post"},
+			FormTemplate{Name: "Bio", FormSubmitURL: "/", Value: bio, Method: "patch"},
 		)
 	}
 }
 
-func handleAboutUpdate(s *Server) http.HandlerFunc {
+func handleAboutPatch(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
@@ -85,7 +85,7 @@ func handleAboutUpdate(s *Server) http.HandlerFunc {
 		s.executeTemplate(
 			w,
 			"form",
-			FormTemplate{Name: "Bio", FormSubmitURL: r.URL.Path, Value: bio, Method: "post"},
+			FormTemplate{Name: "Bio", FormSubmitURL: r.URL.Path, Value: bio, Method: "patch"},
 		)
 	}
 }
@@ -232,7 +232,7 @@ func handleLinkPost(s *Server) http.HandlerFunc {
 	}
 }
 
-func handleLinkPut(s *Server) http.HandlerFunc {
+func handleLinkPatch(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		vars := mux.Vars(r)
