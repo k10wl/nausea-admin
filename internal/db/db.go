@@ -3,8 +3,8 @@ package db
 import "nausea-admin/internal/models"
 
 type IDB interface {
-	GetBio() (string, error)
-	SetBio(string) error
+	GetAbout() (models.About, error)
+	SetAbout(models.About) error
 
 	GetEmail() (string, error)
 	SetEmail(string) error
@@ -25,12 +25,12 @@ func NewDB(db IDB) *DB {
 	}
 }
 
-func (db *DB) GetBio() (string, error) {
-	return db.client.GetBio()
+func (db *DB) GetAbout() (models.About, error) {
+	return db.client.GetAbout()
 }
 
-func (db *DB) SetBio(b string) error {
-	return db.client.SetBio(b)
+func (db *DB) SetAbout(a models.About) error {
+	return db.client.SetAbout(a)
 }
 
 func (db *DB) GetEmail() (string, error) {

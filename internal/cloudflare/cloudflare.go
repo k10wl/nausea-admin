@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -27,16 +28,21 @@ func NewClient() *Cloudflare {
 	accessKeyId := os.Getenv("ACCESS_KEY_ID")
 	accessKeySecret := os.Getenv("ACCESS_KEY_SECRET")
 	publicStorageUrl := os.Getenv("PUBLIC_STORAGE_URL")
-	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-		return aws.Endpoint{
-			URL:               fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId),
-			HostnameImmutable: true,
-			Source:            aws.EndpointSourceCustom,
-		}, nil
-	})
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
+	r2Resolver := aws.EndpointResolverWithOptionsFunc(
+		func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			return aws.Endpoint{
+				URL:               fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId),
+				HostnameImmutable: true,
+				Source:            aws.EndpointSourceCustom,
+			}, nil
+		},
+	)
+	cfg, err := config.LoadDefaultConfig(
+		context.TODO(),
 		config.WithEndpointResolverWithOptions(r2Resolver),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyId, accessKeySecret, "")),
+		config.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(accessKeyId, accessKeySecret, ""),
+		),
 		config.WithRegion("auto"),
 	)
 	if err != nil {
@@ -81,4 +87,16 @@ func (c *Cloudflare) AddObject(file io.Reader, name string) (string, error) {
 	url := fmt.Sprintf("%s/%s", c.publicStorageUrl, *key)
 
 	return url, err
+}
+
+func (c *Cloudflare) RemoveObject(name string) error {
+	_, err := c.client.DeleteObject(
+		context.TODO(),
+		&s3.DeleteObjectInput{Key: &name, Bucket: &c.bucketName},
+	)
+	return err
+}
+
+func (c *Cloudflare) ParseURLKey(url string) string {
+	return strings.TrimPrefix(url, fmt.Sprintf("%s/", c.publicStorageUrl))
 }
