@@ -13,6 +13,12 @@ type IDB interface {
 	CreateLink(models.Link) (models.Link, error)
 	SetLink(models.Link) (models.Link, error)
 	DeleteLink(string) error
+
+	GetFolders() ([]models.Folder, error)
+	GetFolderContents()
+	CreateFolder(models.Folder) error
+	SetFolder(models.Folder) error
+	DeleteFolder(id string) error
 }
 
 type DB struct {

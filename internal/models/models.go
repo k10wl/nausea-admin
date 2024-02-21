@@ -2,40 +2,47 @@ package models
 
 import "time"
 
-type Meta struct {
-	CreatedAt time.Time `firestore:"createdAt" json:"createdAt,omitempty"`
-	UpdatedAt time.Time `firestore:"updatedAt" json:"updatedAt,omitempty"`
-	DeletedAt time.Time `firestore:"deletedAt" json:"deletedAt,omitempty"`
+type Timestamps struct {
+	CreatedAt time.Time  `firestore:"createdAt" json:"createdAt"`
+	UpdatedAt time.Time  `firestore:"updatedAt" json:"updatedAt"`
+	DeletedAt *time.Time `firestore:"deletedAt" json:"deletedAt"`
+}
+
+type ID struct {
+	ID string
 }
 
 type Link struct {
-	ID   string
+	ID
 	URL  string `firestore:"url" json:"url"`
 	Text string `firestore:"text" json:"text"`
+	Timestamps
 }
 
 type Contacts struct {
-	Email string `firestore:"email" json:"email,omitempty"`
-	Links []Link `firestore:"links" json:"links,omitempty"`
+	Email string `firestore:"email" json:"email"`
+	Links []Link `firestore:"links" json:"links"`
+	Timestamps
 }
 
 type About struct {
 	Bio string `firestore:"bio"`
+	Timestamps
 }
 
-type Folder struct {
-	ID   string
-	Name string `firestore:"name" json:"name,omitempty"`
-	// ROOT or valid ID of other folder
-	ParentID string `firestore:"parentId" json:"parentId,omitempty"`
-	// Media is copied over on folder level because fIrEbAsE fIrEsToRe reasons.
-	Media []Media `firestore:"media" json:"media,omitempty"`
-	Meta
+func NewTimestamps() Timestamps {
+	return Timestamps{
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		DeletedAt: nil,
+	}
 }
 
-type Media struct {
-	ID string
-	// Storage URL
-	URL string
-	Meta
+func (t *Timestamps) Update() {
+	t.UpdatedAt = time.Now()
+}
+
+func (t *Timestamps) Delete() {
+	now := time.Now()
+	t.DeletedAt = &now
 }
