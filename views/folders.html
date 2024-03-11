@@ -1,0 +1,80 @@
+{{define "/folders"}} {{template "_head" .}}
+<div  hx-ext="response-targets">
+  <div class="sticky top-0 flex gap border-b py-md bg-white">
+    <h2 class="mr-md">{{.Props.Folder.Name}}</h2>
+    <button onclick="openCreateFolderDialog()">New folder</button>
+    <button>Upload</button>
+  </div>
+  {{if .Props.Error}}
+  <p class="text-red py-md">{{.Props.Error}}</p>
+  {{end}}
+  <menu id="folders" class="py-md">
+    <div>
+      <a href="/folders/{{.Props.Folder.ParentID}}">..</a>
+    </div>
+    {{range .Props.Folder.FolderContents}} {{template "folder" .}} {{else}}
+    <p class="text-gray">*this folder appears to be empty*</p>
+    {{end}}
+  </menu>
+</div>
+<script async src="/assets/folders.js"></script>
+{{template "create folder modal" .}} {{template "_tail"}} {{end}}
+
+
+
+{{define "folder"}}
+<li>
+  <a href="{{.RefID}}">
+    <span>{{.Name}}</span>
+  </a>
+  <button
+    hx-delete="/folders/{{.ContentBase.RefID}}"
+    hx-swap="outerHTML"
+    hx-target="closest li"
+    hx-target-error="next div"
+    {{if .DeletedAt}}disabled{{end}}
+  >
+    Delete
+  </button>
+  {{if .DeletedAt}}
+  <button
+    hx-patch="/folders/{{.ContentBase.RefID}}/restore"
+    hx-swap="outerHTML"
+    hx-target="closest li"
+    hx-target-error="next div"
+  >
+    Restore
+  </button>
+  {{end}}
+  <div class="text-red"></div>
+</li>
+{{end}}
+
+
+
+{{define "create folder modal"}}
+<dialog id="create-folder-dialog" class="fixed center">
+  <form
+    id="create-folder-form"
+    class="p-md flex flex-col gap"
+    hx-post="/folders/{{.Props.Folder.ID.ID}}"
+    hx-swap="beforeend"
+    hx-target="#folders"
+    hx-target-error="#create-folder-error"
+  >
+    <p>Create new folder in "{{.Props.Folder.Name}}"</p>
+    <input autofocus name="name" placeholder="Folder name..." />
+    <div class="text-red empty-hidden" id="create-folder-error"></div>
+    <div class="flex gap">
+      <button
+        type="reset"
+        class="basis-full"
+        onclick="closeCreateFolderDialog()"
+      >
+        Cancel
+      </button>
+      <button class="basis-full">Submit</button>
+    </div>
+  </form>
+</dialog>
+{{end}}

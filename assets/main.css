@@ -1,57 +1,35 @@
 @import 'reset.css';
 
 :root {
-  --color-base: #FFF5EA;
-  --color-primary: #9747FF;
-  --color-accent: #FFFB47;
-  --color-white: #FFF;
-  --color-black: #000;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
 
-  --size-sm: 0.1rem;
-  --size-md: 0.5rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.25rem;
+  --space-xl: 1.5rem;
 }
 
-#app {
-  display: grid;
-  grid-template-columns: 20rem 1fr;
+.fixed {
+  position: fixed;
 }
 
-.border {
-  border: var(--size-md) solid var(--color-black);
+.center {
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
 }
 
-.border-sm {
-  border-width: var(--size-sm);
+.sticky {
+  position: sticky;
 }
 
-.text-white {
-  color: var(--color-white);
-}
-
-.text-black {
-  color: var(--color-black);
-}
-
-.bg-base {
-  background: var(--color-base);
-}
-
-.bg-primary {
-  background: var(--color-primary);
-}
-
-.bg-accent {
-  background: var(--color-accent);
-}
-
-.clickable:hover {
-  color: var(--color-black);
-  background: var(--color-accent);
-}
-
-.paper {
-  background: var(--color-white);
-  padding: var(--size-md);
+.top-0 {
+  top: 0;
 }
 
 .grid {
@@ -62,18 +40,86 @@
   display: flex;
 }
 
+.basis-full {
+  flex-basis: 100%;
+}
+
 .flex-col {
   flex-direction: column;
 }
 
-.gap-md {
-  gap: var(--size-md);
+.gap {
+  gap: var(--space-md)
+}
+
+.mx-sm {
+  margin-left: var(--space-sm);
+  margin-right: var(--space-sm);
+}
+
+.mt-sm {
+  margin-top: var(--space-sm);
+}
+
+.my-sm {
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.my-md {
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.mr-md {
+  margin-right: var(--space-md);
+}
+
+.p-xs {
+  padding: var(--space-xs);
+}
+
+.py-md {
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
 }
 
 .p-md {
-  padding: var(--size-md);
+  padding: var(--space-md);
 }
 
-.h-full {
-  height: 100%;
+.border {
+  border: 1px solid black;
+}
+
+.border-b {
+  border-bottom: 1px solid;
+}
+
+.border-r {
+  border-right: 1px solid;
+}
+
+.border-black {
+  border-color: black;
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.text-gray {
+  color: gray;
+}
+
+.text-red {
+  color: red
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.empty-hidden:empty {
+  display: none;
 }

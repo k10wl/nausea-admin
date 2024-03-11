@@ -41,3 +41,7 @@ func (f *Firestore) docContacts() *firestore.DocumentRef {
 func (f *Firestore) colLinks() *firestore.CollectionRef {
 	return f.client.Collection("links")
 }
+
+func (f *Firestore) collectionFolders() *firestore.CollectionRef {
+	return f.client.Collection("folders")
+}

@@ -1,0 +1,51 @@
+{{define "_head"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>{{if .Title}}{{.Title}}{{else}}Nausea admin{{end}}</title>
+    <link rel="stylesheet" href="/assets/main.css" />
+    <script
+      src="https://unpkg.com/htmx.org@1.9.9"
+      integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+      crossorigin="anonymous"
+        ></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
+    <style>
+html {
+  background-color: white;
+}
+    </style>
+  </head>
+  <body>
+    <div class="grid gap p-md" style="grid-template-columns: 7rem 1fr;">
+      {{template "_aside" .}}
+      <main class="p-md">
+        {{end}}
+
+
+{{define "_tail"}}
+      </main>
+    </div>
+  </body>
+</html>
+{{end}}
+
+
+{{define "_aside"}}
+<aside class="border-r border-black">
+  <nav class="p-md sticky top-0">
+    <menu>
+      {{range .AsideLinks}}
+      <li>
+        <a {{if .Active}}class="underline"{{end}} href="{{.URL}}">
+          {{.Name}}
+        </a>
+      </li>
+      {{end}}
+    </ul>
+  </menu>
+</aside>
+{{end}}

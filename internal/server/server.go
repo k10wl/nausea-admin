@@ -7,8 +7,6 @@ import (
 
 	"nausea-admin/internal/db"
 	"nausea-admin/internal/storage"
-
-	"github.com/gorilla/mux"
 )
 
 type Server struct {
@@ -28,30 +26,16 @@ func NewServer(addr string, db *db.DB, t *template.Template, storage *storage.St
 }
 
 func (s *Server) Run() error {
-	r := mux.NewRouter()
-
-	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-	r.Use(logger)
-
-	r.HandleFunc("/", handleAboutPage(s)).Methods(http.MethodGet)
-	r.HandleFunc("/lazy", handleAboutBio(s)).Methods(http.MethodGet)
-	r.HandleFunc("/", handleAboutPatch(s)).Methods(http.MethodPatch)
-
-	r.HandleFunc("/contacts", handleContactsPage(s)).Methods(http.MethodGet)
-	r.HandleFunc("/contacts/lazy", handleContactsLazy(s)).Methods(http.MethodGet)
-	r.HandleFunc("/contacts/email", handleEmailPatch(s)).Methods(http.MethodPatch)
-	r.HandleFunc("/contacts/links", handleLinkPost(s)).Methods(http.MethodPost)
-	r.HandleFunc("/contacts/links/{id}", handleLinkPatch(s)).Methods(http.MethodPatch)
-	r.HandleFunc("/contacts/links/{id}", handleLinkDelete(s)).Methods(http.MethodDelete)
-
-	r.HandleFunc("/gallery", handleGalleryPage(s)).Methods(http.MethodGet)
-	// TODO rework this handler, bad url
-	r.HandleFunc("/gallery", handleGalleryUpload(s)).Methods(http.MethodPost)
-
-	http.Handle("/", r)
-	log.Printf("Listening and serving on %s\n", s.addr)
-
-	return http.ListenAndServe(s.addr, nil)
+	mux := http.NewServeMux()
+	loggerMux := logger(mux)
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	mux.HandleFunc("/", GetHomePage(s))
+	mux.HandleFunc("/folders/", GetFoldersPage(s))
+	mux.HandleFunc("POST /folders/{id}", CreateFolder(s))
+	mux.HandleFunc("DELETE /folders/{id}", DeleteFolder(s))
+	mux.HandleFunc("PATCH /folders/{id}/restore", RestoreFolder(s))
+	mux.HandleFunc("/folders/{id}", GetFoldersPage(s))
+	return http.ListenAndServe(s.addr, loggerMux)
 }
 
 func (s *Server) executeTemplate(w http.ResponseWriter, tmpl string, data any) {

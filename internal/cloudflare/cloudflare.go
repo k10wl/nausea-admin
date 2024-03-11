@@ -24,14 +24,14 @@ type Cloudflare struct {
 
 func NewClient() *Cloudflare {
 	bucketName := os.Getenv("BUCKET_NAME")
-	accountId := os.Getenv("ACCOUNT_ID")
-	accessKeyId := os.Getenv("ACCESS_KEY_ID")
+	accountID := os.Getenv("ACCOUNT_ID")
+	accessKeyID := os.Getenv("ACCESS_KEY_ID")
 	accessKeySecret := os.Getenv("ACCESS_KEY_SECRET")
 	publicStorageUrl := os.Getenv("PUBLIC_STORAGE_URL")
 	r2Resolver := aws.EndpointResolverWithOptionsFunc(
 		func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 			return aws.Endpoint{
-				URL:               fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId),
+				URL:               fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID),
 				HostnameImmutable: true,
 				Source:            aws.EndpointSourceCustom,
 			}, nil
@@ -41,7 +41,7 @@ func NewClient() *Cloudflare {
 		context.TODO(),
 		config.WithEndpointResolverWithOptions(r2Resolver),
 		config.WithCredentialsProvider(
-			credentials.NewStaticCredentialsProvider(accessKeyId, accessKeySecret, ""),
+			credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, ""),
 		),
 		config.WithRegion("auto"),
 	)
