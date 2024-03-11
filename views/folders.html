@@ -1,14 +1,15 @@
 {{define "/folders"}} {{template "_head" .}}
-<div  hx-ext="response-targets">
-  <div class="sticky top-0 flex gap border-b py-md bg-white">
+<div hx-ext="response-targets">
+  <div class="sticky top-0 flex items-center gap border-b py-md bg-white">
     <h2 class="mr-md">{{.Props.Folder.Name}}</h2>
     <button onclick="openCreateFolderDialog()">New folder</button>
     <button>Upload</button>
+    <show-deleted-checkbox></show-deleted-checkbox>
   </div>
   {{if .Props.Error}}
   <p class="text-red py-md">{{.Props.Error}}</p>
   {{end}}
-  <menu id="folders" class="py-md">
+  <menu id="folder-contents" class="py-md">
     <div>
       <a href="/folders/{{.Props.Folder.ParentID}}">..</a>
     </div>
@@ -17,13 +18,19 @@
     {{end}}
   </menu>
 </div>
-<script async src="/assets/folders.js"></script>
-{{template "create folder modal" .}} {{template "_tail"}} {{end}}
+<script async src="/assets/scripts/folders.js"></script>
 
-
-
-{{define "folder"}}
-<li>
+<style>
+  #folder-contents .content-deleted {
+    display: none;
+  }
+  #folder-contents.show-deleted-content .content-deleted {
+    display: initial;
+  }
+</style>
+{{template "create folder modal" .}} {{template "_tail"}} {{end}} {{define
+"folder"}}
+<li {{if .DeletedAt}}class="content-deleted" {{end}}>
   <a href="{{.RefID}}">
     <span>{{.Name}}</span>
   </a>
@@ -32,7 +39,8 @@
     hx-swap="outerHTML"
     hx-target="closest li"
     hx-target-error="next div"
-    {{if .DeletedAt}}disabled{{end}}
+    {{if
+    .DeletedAt}}disabled{{end}}
   >
     Delete
   </button>
@@ -48,18 +56,14 @@
   {{end}}
   <div class="text-red"></div>
 </li>
-{{end}}
-
-
-
-{{define "create folder modal"}}
+{{end}} {{define "create folder modal"}}
 <dialog id="create-folder-dialog" class="fixed center">
   <form
     id="create-folder-form"
     class="p-md flex flex-col gap"
     hx-post="/folders/{{.Props.Folder.ID.ID}}"
     hx-swap="beforeend"
-    hx-target="#folders"
+    hx-target="#folder-contents"
     hx-target-error="#create-folder-error"
   >
     <p>Create new folder in "{{.Props.Folder.Name}}"</p>
