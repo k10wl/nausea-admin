@@ -43,3 +43,17 @@ func (s *Server) Run() error {
 	mux.HandleFunc("PATCH /folders/{id}/restore", fh.RestoreFolder)
 	return http.ListenAndServe(s.addr, loggerMux)
 }
+
+/*
+TODO:
+- replace delete with hide, and add real delete button
+- update table UI
+  - render table as a grid
+  - add some hover effect to visually divide elements
+  - remove disabled button, why it is there if it is not clickable?
+- add upload feature
+- add about editing
+- create service folders that will have unused images
+- add file logger
+- global search by name
+*/

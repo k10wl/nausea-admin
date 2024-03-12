@@ -32,6 +32,10 @@
   top: 0;
 }
 
+.overflow-hidden {
+  overflow: hidden;
+}
+
 .grid {
   display: grid;
 }
@@ -104,6 +108,10 @@
   border-right: 1px solid;
 }
 
+.border-gray {
+  border-color: gray;
+}
+
 .border-black {
   border-color: black;
 }
@@ -126,4 +134,14 @@
 
 .empty-hidden:empty {
   display: none;
+}
+
+.text-one-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hidden {
+  visibility: hidden;
 }

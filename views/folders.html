@@ -10,9 +10,15 @@
   <p class="text-red py-md">{{.Props.Error}}</p>
   {{end}}
   <menu id="folder-contents" class="py-md">
-    <div>
-      <a href="/folders/{{.Props.Folder.ParentID}}">..</a>
-    </div>
+    <li>
+      <div class="border-b border-gray p-xs grid gap">
+        <a
+          class="text-one-line flex items-center"
+          href="/folders/{{.Props.Folder.ParentID}}"
+          >..</a
+        >
+      </div>
+    </li>
     {{range .Props.Folder.FolderContents}} {{template "folder" .}} {{else}}
     <p class="text-gray">*this folder appears to be empty*</p>
     {{end}}
@@ -25,35 +31,51 @@
     display: none;
   }
   #folder-contents.show-deleted-content .content-deleted {
-    display: initial;
+    display: block;
+  }
+
+  .content-deleted {
+    opacity: 0.5;
+  }
+
+  li:hover {
+    background-color: rgba(0, 0, 0, 0.05);
   }
 </style>
 {{template "create folder modal" .}} {{template "_tail"}} {{end}} {{define
 "folder"}}
 <li {{if .DeletedAt}}class="content-deleted" {{end}}>
-  <a href="{{.RefID}}">
-    <span>{{.Name}}</span>
-  </a>
-  <button
-    hx-delete="/folders/{{.ContentBase.RefID}}"
-    hx-swap="outerHTML"
-    hx-target="closest li"
-    hx-target-error="next div"
-    {{if
-    .DeletedAt}}disabled{{end}}
+  <div
+    class="border-b border-gray p-xs grid gap"
+    style="grid-template-columns: 1fr auto auto"
   >
-    Delete
-  </button>
-  {{if .DeletedAt}}
-  <button
-    hx-patch="/folders/{{.ContentBase.RefID}}/restore"
-    hx-swap="outerHTML"
-    hx-target="closest li"
-    hx-target-error="next div"
-  >
-    Restore
-  </button>
-  {{end}}
+    <a
+      class="text-one-line flex items-center"
+      title="{{.Name}}"
+      href="{{.RefID}}"
+    >
+      <span class="text-one-line"> <span>{{.Name}}</span></span>
+    </a>
+    {{if .DeletedAt}}
+    <button
+      hx-patch="/folders/{{.ContentBase.RefID}}/restore"
+      hx-swap="outerHTML"
+      hx-target="closest li"
+      hx-target-error="next div"
+    >
+      Restore
+    </button>
+    {{else}}
+    <button
+      hx-delete="/folders/{{.ContentBase.RefID}}"
+      hx-swap="outerHTML"
+      hx-target="closest li"
+      hx-target-error="next div"
+    >
+      Delete
+    </button>
+    {{end}}
+  </div>
   <div class="text-red"></div>
 </li>
 {{end}} {{define "create folder modal"}}
