@@ -1,47 +1,45 @@
 package server
 
 import (
-	"html/template"
-	"log"
 	"net/http"
 
 	"nausea-admin/internal/db"
+	"nausea-admin/internal/server/handlers"
+	"nausea-admin/internal/server/logger"
+	"nausea-admin/internal/server/template"
 	"nausea-admin/internal/storage"
 )
 
 type Server struct {
 	addr    string
 	db      *db.DB
-	t       *template.Template
 	storage *storage.Storage
 }
 
-func NewServer(addr string, db *db.DB, t *template.Template, storage *storage.Storage) *Server {
+func NewServer(addr string, db *db.DB, storage *storage.Storage) *Server {
 	return &Server{
 		addr:    addr,
 		db:      db,
-		t:       t,
 		storage: storage,
 	}
 }
 
 func (s *Server) Run() error {
 	mux := http.NewServeMux()
-	loggerMux := logger(mux)
+	l := logger.NewServerLogger()
+	loggerMux := l.HTTPLogger(mux)
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-	mux.HandleFunc("/", GetHomePage(s))
-	mux.HandleFunc("/folders/", GetFoldersPage(s))
-	mux.HandleFunc("POST /folders/{id}", CreateFolder(s))
-	mux.HandleFunc("DELETE /folders/{id}", DeleteFolder(s))
-	mux.HandleFunc("PATCH /folders/{id}/restore", RestoreFolder(s))
-	mux.HandleFunc("/folders/{id}", GetFoldersPage(s))
-	return http.ListenAndServe(s.addr, loggerMux)
-}
 
-func (s *Server) executeTemplate(w http.ResponseWriter, tmpl string, data any) {
-	err := s.t.ExecuteTemplate(w, tmpl, data)
-	if err != nil {
-		log.Println("Error executing template:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
+	t := template.NewTemplate(l)
+
+	hh := handlers.NewHomeHandler(t)
+	mux.HandleFunc("/", hh.GetHomePage)
+
+	fh := handlers.NewFoldersHandler(*s.db, t)
+	mux.HandleFunc("/folders/", fh.GetFoldersPage)
+	mux.HandleFunc("/folders/{id}", fh.GetFoldersPage)
+	mux.HandleFunc("POST /folders/{id}", fh.CreateFolder)
+	mux.HandleFunc("DELETE /folders/{id}", fh.DeleteFolder)
+	mux.HandleFunc("PATCH /folders/{id}/restore", fh.RestoreFolder)
+	return http.ListenAndServe(s.addr, loggerMux)
 }
