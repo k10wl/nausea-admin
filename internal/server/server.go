@@ -27,6 +27,7 @@ func NewServer(addr string, db *db.DB, storage *storage.Storage) *Server {
 func (s *Server) Run() error {
 	mux := http.NewServeMux()
 	l := logger.NewServerLogger()
+	defer l.CloseLogger()
 	loggerMux := l.HTTPLogger(mux)
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
@@ -46,14 +47,9 @@ func (s *Server) Run() error {
 
 /*
 TODO:
-- replace delete with hide, and add real delete button
-- update table UI
-  - render table as a grid
-  - add some hover effect to visually divide elements
-  - remove disabled button, why it is there if it is not clickable?
 - add upload feature
-- add about editing
 - create service folders that will have unused images
-- add file logger
+- add about editing
+- replace delete with hide, and add real delete button
 - global search by name
 */

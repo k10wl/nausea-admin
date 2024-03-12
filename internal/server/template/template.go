@@ -39,6 +39,6 @@ func (t Template) ExecuteTemplate(w http.ResponseWriter, tmpl string, data any) 
 
 func (t Template) sendError(w http.ResponseWriter, tmpl string, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
-	t.l.Log(fmt.Sprintf("Error upon executing template \"%s\": %+v", tmpl, err))
+	t.l.Logln(fmt.Sprintf("Error upon executing template \"%s\": %+v", tmpl, err))
 	t.t.ExecuteTemplate(w, "_error", map[string]interface{}{"Error": err})
 }
