@@ -42,7 +42,7 @@
   </form>
 </custom-dialog>
 
-<custom-dialog trigger="#upload-trigger">
+<custom-dialog onopen="javascript:this.firstElementChild.mount()" trigger="#upload-trigger">
   <image-upload></image-upload>
 </custom-dialog>
 

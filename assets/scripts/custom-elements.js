@@ -140,23 +140,25 @@ customElements.define(
       input.type = "file";
       input.accept = "image/*";
       input.multiple = true;
-      const dataTransfer = new DataTransfer()
-      input.addEventListener("change", (e) => {
-        const filesShift = [...dataTransfer.files, ...input.files]
-        dataTransfer.items.clear()
-        filesShift.forEach(file => dataTransfer.items.add(file))
-        input.files = dataTransfer.files
+      const dataTransfer = new DataTransfer();
+      input.addEventListener("change", () => {
+        const filesShift = [...dataTransfer.files, ...input.files];
+        dataTransfer.items.clear();
+        filesShift.forEach((file) => dataTransfer.items.add(file));
+        input.files = dataTransfer.files;
         // kinda meh but works until there is no inner state on images
-        imageContainer.innerHTML=''
-        for (let i = 0; i < e.currentTarget.files.length; i++) {
+        imageContainer.innerHTML = "";
+        for (let i = 0; i < input.files.length; i++) {
           const reader = new FileReader();
+          const file = input.files.item(i);
           reader.onload = (e) => {
             const wrapper = document.createElement("div");
             wrapper.classList.add("wrapper");
             const button = document.createElement("button");
             button.onclick = () => {
-              dataTransfer.items.remove(i)
-              input.files = dataTransfer.files
+              const index = [...dataTransfer.files].indexOf(file);
+              dataTransfer.items.remove(index);
+              input.files = dataTransfer.files;
               wrapper.remove();
             };
             button.textContent = "x";
@@ -171,7 +173,7 @@ customElements.define(
       });
       const button = document.createElement("button");
       button.innerText = "upload";
-      button.classList.add("upload")
+      button.classList.add("upload");
       const style = document.createElement("style");
       style.innerText = `
 img {
