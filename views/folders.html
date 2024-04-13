@@ -1,16 +1,15 @@
-{{define "/folders"}} {{template "_head" .}}
+{{define "/folders"}}
+{{template "_head" .}}
 <div hx-ext="response-targets">
   <div class="sticky top-0 flex items-center gap border-b py-md bg-white">
     <h2 class="mr-md">{{.Props.Folder.Name}}</h2>
-    <button onclick="openCreateFolderDialog()">New folder</button>
-    <button>Upload</button>
+    <button id="new-folder-trigger">New folder</button>
+    <button id="upload-trigger">Upload</button>
     <show-deleted-checkbox></show-deleted-checkbox>
   </div>
   {{if .Props.Error}}
   <p class="text-red py-md">{{.Props.Error}}</p>
   {{end}}
-  <menu id="folder-contents" class="py-md">
-    <li>
       <div class="border-b border-gray p-xs grid gap">
         <a
           class="text-one-line flex items-center"
@@ -18,12 +17,35 @@
           >..</a
         >
       </div>
-    </li>
-    {{range .Props.Folder.FolderContents}} {{template "folder" .}} {{else}}
-    <p class="text-gray">*this folder appears to be empty*</p>
-    {{end}}
-  </menu>
+  <menu id="folder-contents">{{range .Props.Folder.FolderContents}}{{template "folder" .}}{{end}}</menu>
 </div>
+
+<custom-dialog
+  trigger="#new-folder-trigger"
+  onclose="javascript:document.getElementById('create-folder-error').innerHTML = ''"
+>
+  <form
+    id="create-folder-form"
+    class="flex flex-col gap"
+    hx-post="/folders/{{.Props.Folder.ID.ID}}"
+    hx-swap="beforeend"
+    hx-target="#folder-contents"
+    hx-target-error="#create-folder-error"
+  >
+    <p>Create new folder in "{{.Props.Folder.Name}}"</p>
+    <input autofocus name="name" placeholder="Folder name..." />
+    <div class="text-red empty-hidden" id="create-folder-error"></div>
+    <div class="flex gap">
+      <button type="reset" class="basis-full">Cancel</button>
+      <button type="submit" class="basis-full">Submit</button>
+    </div>
+  </form>
+</custom-dialog>
+
+<custom-dialog trigger="#upload-trigger">
+  <image-upload></image-upload>
+</custom-dialog>
+
 <script async src="/assets/scripts/folders.js"></script>
 
 <style>
@@ -33,17 +55,27 @@
   #folder-contents.show-deleted-content .content-deleted {
     display: block;
   }
+  #folder-contents:empty:before {
+    content: "**this folder appears to be empty**";
+    display: block;
+    padding: var(--space-sm);
+    color: gray;
+  }
 
   .content-deleted {
     opacity: 0.5;
   }
 
-  li:hover {
+  #folder-contents li:hover {
     background-color: rgba(0, 0, 0, 0.05);
   }
 </style>
-{{template "create folder modal" .}} {{template "_tail"}} {{end}} {{define
-"folder"}}
+{{template "_tail"}}
+{{end}}
+
+
+
+{{define "folder"}}
 <li {{if .DeletedAt}}class="content-deleted" {{end}}>
   <div
     class="border-b border-gray p-xs grid gap"
@@ -78,29 +110,4 @@
   </div>
   <div class="text-red"></div>
 </li>
-{{end}} {{define "create folder modal"}}
-<dialog id="create-folder-dialog" class="fixed center">
-  <form
-    id="create-folder-form"
-    class="p-md flex flex-col gap"
-    hx-post="/folders/{{.Props.Folder.ID.ID}}"
-    hx-swap="beforeend"
-    hx-target="#folder-contents"
-    hx-target-error="#create-folder-error"
-  >
-    <p>Create new folder in "{{.Props.Folder.Name}}"</p>
-    <input autofocus name="name" placeholder="Folder name..." />
-    <div class="text-red empty-hidden" id="create-folder-error"></div>
-    <div class="flex gap">
-      <button
-        type="reset"
-        class="basis-full"
-        onclick="closeCreateFolderDialog()"
-      >
-        Cancel
-      </button>
-      <button class="basis-full">Submit</button>
-    </div>
-  </form>
-</dialog>
 {{end}}

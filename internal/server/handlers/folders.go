@@ -51,6 +51,7 @@ func (fh FoldersHandler) CreateFolder(w http.ResponseWriter, r *http.Request) {
 	parentID := getFolderID(r)
 	name := r.FormValue("name")
 	if name == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
 		utils.ErrorResponse(
 			w,
 			r,
@@ -60,6 +61,7 @@ func (fh FoldersHandler) CreateFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if parentID == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
 		utils.ErrorResponse(
 			w,
 			r,

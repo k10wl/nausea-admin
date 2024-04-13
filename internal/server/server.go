@@ -42,12 +42,17 @@ func (s *Server) Run() error {
 	mux.HandleFunc("POST /folders/{id}", fh.CreateFolder)
 	mux.HandleFunc("DELETE /folders/{id}", fh.DeleteFolder)
 	mux.HandleFunc("PATCH /folders/{id}/restore", fh.RestoreFolder)
+
+	mh := handlers.NewMediaHandler(*s.db, t, s.storage)
+	mux.HandleFunc("POST /media", mh.UploadMedia)
+
 	return http.ListenAndServe(s.addr, loggerMux)
 }
 
 /*
 TODO:
 - add upload feature
+- create custom modal element because new folder and upload are basically the same
 - create service folders that will have unused images
 - add about editing
 - replace delete with hide, and add real delete button

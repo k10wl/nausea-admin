@@ -45,3 +45,7 @@ func (f *Firestore) colLinks() *firestore.CollectionRef {
 func (f *Firestore) collectionFolders() *firestore.CollectionRef {
 	return f.client.Collection("folders")
 }
+
+func (f *Firestore) collectionMedia() *firestore.CollectionRef {
+	return f.client.Collection("media")
+}

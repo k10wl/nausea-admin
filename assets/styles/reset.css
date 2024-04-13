@@ -17,6 +17,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+img {
+  width: 100%;
+  height: auto;
+}
+
 img,
 picture,
 video,

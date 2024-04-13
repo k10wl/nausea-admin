@@ -25,14 +25,14 @@ type ContentBase struct {
 
 type FolderContent struct {
 	ContentBase
-	Name string
+	Name string `firestore:"name"`
 }
 
 type MediaContent struct {
 	ContentBase
-	URL         string
-	Name        string
-	Description string
+	URL         string `firestore:"URL"`
+	Name        string `firestore:"name"`
+	Description string `firestore:"description"`
 }
 
 func NewFolder(parentID string, name string) (*Folder, error) {
