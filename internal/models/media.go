@@ -12,10 +12,12 @@ func NewMedia(URL string) (Media, error) {
 	return m, err
 }
 
-func (m Media) AsContent() (MediaContent, error) {
+func (m Media) AsContent(parentID string) (MediaContent, error) {
 	mc := MediaContent{
 		ContentBase: ContentBase{RefID: m.ID.ID, Timestamps: NewTimestamps()},
 		Name:        m.ID.ID,
+		URL:         m.URL,
+		ParentID:    parentID,
 		Description: "",
 	}
 	err := mc.generateID()

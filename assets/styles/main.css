@@ -145,3 +145,7 @@
 .hidden {
   visibility: hidden;
 }
+
+.h-full {
+  height: 100%;
+}

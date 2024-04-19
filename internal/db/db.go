@@ -7,6 +7,10 @@ type IDB interface {
 	CreateFolder(models.Folder) (models.Folder, models.FolderContent, error)
 	MarkFolderDeletedByID(string) (models.Folder, error)
 	MarkFolderRestoredByID(string) (models.Folder, error)
+	CreateMedia(models.Media) error
+	UploadMediaToFolder([]models.MediaContent, string) error
+	MarkMediaAsDeletedInFolder(mediaID string, folderID string) (models.MediaContent, error)
+	MarkMediaAsRestoredInFolder(mediaID string, folderID string) (models.MediaContent, error)
 }
 
 type DB struct {
@@ -33,4 +37,20 @@ func (db DB) MarkFolderDeletedByID(id string) (models.Folder, error) {
 
 func (db DB) MarkFolderRestoredByID(id string) (models.Folder, error) {
 	return db.client.MarkFolderRestoredByID(id)
+}
+
+func (db DB) UploadMediaToFolder(media []models.MediaContent, folderID string) error {
+	return db.client.UploadMediaToFolder(media, folderID)
+}
+
+func (db DB) MarkMediaAsDeletedInFolder(mediaID string, folderID string) (models.MediaContent, error) {
+	return db.client.MarkMediaAsDeletedInFolder(mediaID, folderID)
+}
+
+func (db DB) MarkMediaAsRestoredInFolder(mediaID string, folderID string) (models.MediaContent, error) {
+	return db.client.MarkMediaAsRestoredInFolder(mediaID, folderID)
+}
+
+func (db DB) CreateMedia(media models.Media) error {
+	return db.client.CreateMedia(media)
 }

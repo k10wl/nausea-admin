@@ -32,6 +32,7 @@ type MediaContent struct {
 	ContentBase
 	URL         string `firestore:"URL"`
 	Name        string `firestore:"name"`
+	ParentID    string `firestore:"parentID"`
 	Description string `firestore:"description"`
 }
 

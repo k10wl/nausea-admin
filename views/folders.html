@@ -17,7 +17,12 @@
           >..</a
         >
       </div>
-  <menu id="folder-contents">{{range .Props.Folder.FolderContents}}{{template "folder" .}}{{end}}</menu>
+  <menu id="folder-contents">
+    {{range .Props.Folder.FolderContents}}{{template "folder-list" .}}{{end}}
+    <span id="folders-tail"></span>
+    {{range .Props.Folder.MediaContents}}{{template "media-list" .}}{{end}}
+    <span id="media-tail"></span>
+  </menu>
 </div>
 
 <custom-dialog
@@ -28,8 +33,8 @@
     id="create-folder-form"
     class="flex flex-col gap"
     hx-post="/folders/{{.Props.Folder.ID.ID}}"
-    hx-swap="beforeend"
-    hx-target="#folder-contents"
+    hx-swap="beforebegin"
+    hx-target="#folders-tail"
     hx-target-error="#create-folder-error"
   >
     <p>Create new folder in "{{.Props.Folder.Name}}"</p>
@@ -43,7 +48,7 @@
 </custom-dialog>
 
 <custom-dialog onopen="javascript:this.firstElementChild.mount()" trigger="#upload-trigger">
-  <image-upload></image-upload>
+  <image-upload data-folder-id="{{.Props.Folder.ID.ID}}"></image-upload>
 </custom-dialog>
 
 <script async src="/assets/scripts/folders.js"></script>
@@ -69,45 +74,96 @@
   #folder-contents li:hover {
     background-color: rgba(0, 0, 0, 0.05);
   }
+  .media--image {
+    max-height: 10rem;
+    width: auto;
+  }
 </style>
 {{template "_tail"}}
 {{end}}
 
 
+{{define "media-list-range"}}
+  {{range .MediaContents}}{{template "media-list" .}}{{end}}
+{{end}}
 
-{{define "folder"}}
+
+{{define "content-deletable-head"}}
 <li {{if .DeletedAt}}class="content-deleted" {{end}}>
   <div
     class="border-b border-gray p-xs grid gap"
     style="grid-template-columns: 1fr auto auto"
   >
-    <a
-      class="text-one-line flex items-center"
-      title="{{.Name}}"
-      href="{{.RefID}}"
-    >
-      <span class="text-one-line"> <span>{{.Name}}</span></span>
-    </a>
-    {{if .DeletedAt}}
-    <button
-      hx-patch="/folders/{{.ContentBase.RefID}}/restore"
-      hx-swap="outerHTML"
-      hx-target="closest li"
-      hx-target-error="next div"
-    >
-      Restore
-    </button>
-    {{else}}
-    <button
-      hx-delete="/folders/{{.ContentBase.RefID}}"
-      hx-swap="outerHTML"
-      hx-target="closest li"
-      hx-target-error="next div"
-    >
-      Delete
-    </button>
-    {{end}}
+{{end}}
+
+
+{{define "content-deletable-tail"}}
   </div>
   <div class="text-red"></div>
 </li>
+{{end}}
+
+
+{{define "folder-list"}}
+  {{template "content-deletable-head" .}}
+  <a
+    class="text-one-line flex items-center"
+    title="{{.Name}}"
+    href="{{.RefID}}"
+  >
+    <span class="text-one-line"> <span>{{.Name}}</span></span>
+  </a>
+  {{if .DeletedAt}}
+  <button
+    hx-patch="/folders/{{.ContentBase.RefID}}/restore"
+    hx-swap="outerHTML"
+    hx-target="closest li"
+    hx-target-error="next div"
+  >
+    Restore
+  </button>
+  {{else}}
+  <button
+    hx-delete="/folders/{{.ContentBase.RefID}}"
+    hx-swap="outerHTML"
+    hx-target="closest li"
+    hx-target-error="next div"
+  >
+    Delete
+  </button>
+  {{end}}
+  {{template "content-deletable-tail" .}}
+{{end}}
+
+
+{{define "media-list"}}
+  {{template "content-deletable-head" .}}
+  <span
+    class="text-one-line flex gap items-center"
+    title="{{.Name}}"
+    href="{{.RefID}}"
+  >
+    <img src="{{.URL}}" class="h-full media--image" />
+    <span class="text-one-line"> <span>{{.Name}}</span></span>
+  </span>
+  {{if .DeletedAt}}
+  <button
+    hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore"
+    hx-swap="outerHTML"
+    hx-target="closest li"
+    hx-target-error="next div"
+  >
+    Restore
+  </button>
+  {{else}}
+  <button
+    hx-delete="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}"
+    hx-swap="outerHTML"
+    hx-target="closest li"
+    hx-target-error="next div"
+  >
+    Delete
+  </button>
+  {{end}}
+  {{template "content-deletable-tail" .}}
 {{end}}

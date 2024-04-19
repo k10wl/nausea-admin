@@ -42,8 +42,10 @@ func (s *Server) Run() error {
 	mux.HandleFunc("POST /folders/{id}", fh.CreateFolder)
 	mux.HandleFunc("DELETE /folders/{id}", fh.DeleteFolder)
 	mux.HandleFunc("PATCH /folders/{id}/restore", fh.RestoreFolder)
+	mux.HandleFunc("DELETE /folders/{id}/{media_id}", fh.DeleteMediaFromFolder)
+	mux.HandleFunc("PATCH /folders/{id}/{media_id}/restore", fh.RestoreMediaInFolder)
 
-	mh := handlers.NewMediaHandler(*s.db, t, s.storage)
+	mh := handlers.NewMediaHandler(*s.db, t, s.storage, l)
 	mux.HandleFunc("POST /media", mh.UploadMedia)
 
 	return http.ListenAndServe(s.addr, loggerMux)

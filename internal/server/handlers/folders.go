@@ -90,7 +90,7 @@ func (fh FoldersHandler) CreateFolder(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	fh.Template.ExecuteTemplate(w, "folder", asContent)
+	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
 }
 
 func (fh FoldersHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +116,51 @@ func (fh FoldersHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fh.Template.ExecuteTemplate(w, "folder", asContent)
+	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
+}
+
+func (fh FoldersHandler) DeleteMediaFromFolder(w http.ResponseWriter, r *http.Request) {
+	folderID := getFolderID(r)
+	mediaID := r.PathValue("media_id")
+	if folderID == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("no folder id"))
+		return
+	}
+	if mediaID == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("no media id"))
+		return
+	}
+	media, err := fh.DB.MarkMediaAsDeletedInFolder(mediaID, folderID)
+	if err != nil {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("failed to restore"))
+		return
+	}
+	fh.Template.ExecuteTemplate(w, "media-list", media)
+}
+
+func (fh FoldersHandler) RestoreMediaInFolder(w http.ResponseWriter, r *http.Request) {
+	folderID := getFolderID(r)
+	mediaID := r.PathValue("media_id")
+	if folderID == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("no folder id"))
+		return
+	}
+	if mediaID == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("no media id"))
+		return
+	}
+	media, err := fh.DB.MarkMediaAsRestoredInFolder(mediaID, folderID)
+	if err != nil {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("failed to restore"))
+		return
+	}
+	fh.Template.ExecuteTemplate(w, "media-list", media)
 }
 
 func (fh FoldersHandler) RestoreFolder(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +181,7 @@ func (fh FoldersHandler) RestoreFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fh.Template.ExecuteTemplate(w, "folder", asContent)
+	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
 }
 
 func getFolderID(r *http.Request) string {

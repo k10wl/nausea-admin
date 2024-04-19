@@ -132,11 +132,24 @@ customElements.define(
     }
 
     createForm() {
+      // todo pull out form
+      const folderId = this.getAttribute('data-folder-id')
       const form = document.createElement("form");
       form.method = "dialog";
+      form.setAttribute("hx-ext", "responce-targets")
+      form.setAttribute("hx-post", `/media?folder-id=${folderId}`)
+      form.setAttribute("hx-encoding", "multipart/form-data")
+      form.setAttribute("hx-swap", "beforebegin")
+      form.setAttribute("hx-target", "#media-tail")
+      form.setAttribute("hx-target-error", "#upload-media-error")
+      form.setAttribute("hx-on::after-request", "javascript:console.log(this)")
+      const errorEl = document.createElement("div")
+      errorEl.id = "upload-media-error"
+      errorEl.classList.add("text-red", "empty-hidden")
       const input = document.createElement("input");
       const imageContainer = document.createElement("div");
       imageContainer.id = "image-preview-container";
+      input.name = "file";
       input.type = "file";
       input.accept = "image/*";
       input.multiple = true;
@@ -205,8 +218,9 @@ img {
   margin-left: auto;
 }
       `;
-      form.append(input, button, imageContainer);
+      form.append(input, button, errorEl, imageContainer);
       this.shadowRoot.append(style, form);
+      htmx.process(form)
     }
   },
 );

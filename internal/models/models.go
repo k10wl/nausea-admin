@@ -9,7 +9,7 @@ type Timestamps struct {
 }
 
 type ID struct {
-	ID string `firestore:"-"`
+	ID string `firestore:"id"`
 }
 
 type Link struct {

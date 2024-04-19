@@ -2,6 +2,7 @@ package firestore
 
 import (
 	"context"
+	"slices"
 
 	"nausea-admin/internal/models"
 
@@ -147,4 +148,45 @@ func (f *Firestore) MarkFolderRestoredByID(id string) (models.Folder, error) {
 		return err
 	})
 	return folder, err
+}
+
+func (f *Firestore) UploadMediaToFolder(media []models.MediaContent, folderId string) error {
+	var folder models.Folder
+	folderRef := f.collectionFolders().Doc(folderId)
+	doc, _ := folderRef.Get(context.TODO())
+	doc.DataTo(&folder)
+	_, err := folderRef.Update(context.TODO(), []firestore.Update{
+		{Path: "media", Value: append(folder.MediaContents, media...)},
+	})
+	return err
+}
+
+func (f *Firestore) MarkMediaAsDeletedInFolder(mediaID string, folderID string) (models.MediaContent, error) {
+	var folder models.Folder
+	folderRef := f.collectionFolders().Doc(folderID)
+	doc, _ := folderRef.Get(context.TODO())
+	doc.DataTo(&folder)
+	i := slices.IndexFunc(folder.MediaContents, func(m models.MediaContent) bool {
+		return m.ID.ID == mediaID
+	})
+	folder.MediaContents[i].Delete()
+	_, err := folderRef.Update(context.TODO(), []firestore.Update{
+		{Path: "media", Value: folder.MediaContents},
+	})
+	return folder.MediaContents[i], err
+}
+
+func (f *Firestore) MarkMediaAsRestoredInFolder(mediaID string, folderID string) (models.MediaContent, error) {
+	var folder models.Folder
+	folderRef := f.collectionFolders().Doc(folderID)
+	doc, _ := folderRef.Get(context.TODO())
+	doc.DataTo(&folder)
+	i := slices.IndexFunc(folder.MediaContents, func(m models.MediaContent) bool {
+		return m.ID.ID == mediaID
+	})
+	folder.MediaContents[i].Restore()
+	_, err := folderRef.Update(context.TODO(), []firestore.Update{
+		{Path: "media", Value: folder.MediaContents},
+	})
+	return folder.MediaContents[i], err
 }
