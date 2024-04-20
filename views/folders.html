@@ -12,9 +12,9 @@
   {{end}}
       <div class="border-b border-gray p-xs grid gap">
         <a
-          class="text-one-line flex items-center"
+          class="text-one-line flex items-center folder"
           href="/folders/{{.Props.Folder.ParentID}}"
-          >..</a
+          >/..</a
         >
       </div>
   <menu id="folder-contents">
@@ -27,7 +27,7 @@
 
 <custom-dialog
   trigger="#new-folder-trigger"
-  onclose="javascript:document.getElementById('create-folder-error').innerHTML = ''"
+  onclose="cleanupCreateFolder()"
 >
   <form
     id="create-folder-form"
@@ -38,7 +38,7 @@
     hx-target-error="#create-folder-error"
   >
     <p>Create new folder in "{{.Props.Folder.Name}}"</p>
-    <input autofocus name="name" placeholder="Folder name..." />
+    <input autofocus name="name" placeholder="Folder name...">
     <div class="text-red empty-hidden" id="create-folder-error"></div>
     <div class="flex gap">
       <button type="reset" class="basis-full">Cancel</button>
@@ -47,38 +47,37 @@
   </form>
 </custom-dialog>
 
-<custom-dialog onopen="javascript:this.firstElementChild.mount()" trigger="#upload-trigger">
-  <image-upload data-folder-id="{{.Props.Folder.ID.ID}}"></image-upload>
+<custom-dialog
+  trigger="#upload-trigger"
+  onopen="openFileInput()"
+  onclose="cleanupUpload()"
+  >
+  <form 
+    id="upload-media-form"
+    class="block"
+    hx-post="/media?folder-id={{.Props.Folder.ID.ID}}"
+    hx-encoding= "multipart/form-data"
+    hx-swap="beforebegin"
+    hx-target="#media-tail"
+    hx-target-error="#upload-media-error"
+    >
+    <div class="upload-controls">
+      <input id="media-file-input" type="file" name="file" multiple accept="image/*">
+      <button type="submit">Upload</button>
+    </div>
+    <div class="text-red empty-hidden" id="upload-media-error"></div>
+    <div id="upload-preview-container"></div>
+    <template id="upload-preview-template">
+      <div class="upload-preview">
+        <button type="button">x</button>
+        <img src="" alt="">
+      <div>
+    </template>
+  </form>
 </custom-dialog>
 
 <script async src="/assets/scripts/folders.js"></script>
-
-<style>
-  #folder-contents .content-deleted {
-    display: none;
-  }
-  #folder-contents.show-deleted-content .content-deleted {
-    display: block;
-  }
-  #folder-contents:empty:before {
-    content: "**this folder appears to be empty**";
-    display: block;
-    padding: var(--space-sm);
-    color: gray;
-  }
-
-  .content-deleted {
-    opacity: 0.5;
-  }
-
-  #folder-contents li:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-  .media--image {
-    max-height: 10rem;
-    width: auto;
-  }
-</style>
+<link rel="stylesheet" type="text/css" href="/assets/styles/folders.css">
 {{template "_tail"}}
 {{end}}
 
@@ -111,7 +110,7 @@
     title="{{.Name}}"
     href="{{.RefID}}"
   >
-    <span class="text-one-line"> <span>{{.Name}}</span></span>
+    <span class="folder text-one-line"><span>{{.Name}}</span></span>
   </a>
   {{if .DeletedAt}}
   <button
@@ -143,7 +142,9 @@
     title="{{.Name}}"
     href="{{.RefID}}"
   >
-    <img src="{{.URL}}" class="h-full media--image" />
+    <span class="media--container">
+      <img src="{{.URL}}" class="h-full media--image">
+    </span>
     <span class="text-one-line"> <span>{{.Name}}</span></span>
   </span>
   {{if .DeletedAt}}

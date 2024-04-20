@@ -1,0 +1,91 @@
+#folder-contents .content-deleted {
+  display: none;
+}
+
+#folder-contents.show-deleted-content .content-deleted {
+  display: block;
+}
+
+#folder-contents:empty:before {
+  content: "**this folder appears to be empty**";
+  display: block;
+  padding: var(--space-sm);
+  color: gray;
+}
+
+.content-deleted {
+  opacity: 0.5;
+}
+
+#folder-contents li:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.media--container {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.media--image {
+  object-fit: cover;
+}
+
+.folder::before {
+  content: "📁 ";
+  display: inline;
+  white-space: pre;
+}
+
+.upload-controls {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 0;
+  z-index: 10;
+}
+
+#create-folder-form.htmx-request button[type="submit"]:before,
+#upload-media-form.htmx-request button[type="submit"]:before {
+  content: "⏳ ";
+  display: inline;
+}
+
+#upload-media-form:has(#upload-preview-container:empty) button[type="submit"] {
+  display: none
+}
+
+#upload-preview-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  * {
+    flex: 1 0 300px;
+  }
+}
+
+.upload-preview {
+  position: relative;
+
+  button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  img {
+    object-fit: cover;
+  }
+}
+
+.upload-preview button:focus,
+.upload-preview:hover button {
+  opacity: 1;
+}
