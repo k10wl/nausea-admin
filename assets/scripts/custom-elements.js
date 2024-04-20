@@ -107,3 +107,45 @@ customElements.define(
     }
   },
 );
+
+customElements.define(
+  "custom-scalable",
+  class CustomImage extends HTMLElement {
+    constructor() {
+      super();
+      const root = this.attachShadow({ mode: "open" });
+      const img = document.createElement("img");
+      this.getAttributeNames().forEach((name) =>
+        img.setAttribute(name, this.getAttribute(name)),
+      );
+      const container = document.createElement("div");
+      const slot = document.createElement("slot");
+      container.appendChild(slot);
+      slot.addEventListener("slotchange", () => {
+        slot.assignedElements()[0].addEventListener("click", () => {
+          if (container.classList.toggle("expanded")) {
+            document.body.style.setProperty("overflow", "hidden", "important");
+          } else {
+            document.body.style.removeProperty("overflow");
+          }
+        });
+      });
+      const style = document.createElement("style");
+      style.textContent = `
+div.expanded {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.1);
+  backdrop-filter: blur(5px);
+}
+::slotted(IMG) {
+  margin: auto;
+  object-fit: contain !important;
+}
+      `;
+      container.append(img);
+      root.append(style, container);
+      console.log("connected");
+    }
+  },
+);
