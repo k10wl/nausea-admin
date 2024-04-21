@@ -76,6 +76,33 @@
   </form>
 </custom-dialog>
 
+<custom-dialog trigger=".rename-folder">
+  <form
+    id="rename-folder-form"
+    data-hx-base="/folders/"
+    hx-patch="/folders/"
+    hx-swap="outerHTML"
+    class="grid gap"
+    >
+    <label class="grid">Name
+      <textarea name="name"></textarea>
+    </label class="grid">
+    <button type="submit">submit</button>
+  </form>
+</custom-dialog>
+
+<custom-dialog trigger=".rename-media">
+  <form id="rename-media-form" hx-post="/" class="grid gap">
+    <label class="grid">Name
+      <textarea name="name"></textarea>
+    </label class="grid">
+    <label class="grid">Description
+      <textarea name="description"></textarea>
+    </label class="grid">
+    <button type="submit">submit</button>
+  </form>
+</custom-dialog>
+
 <script async src="/assets/scripts/folders.js"></script>
 <link rel="stylesheet" type="text/css" href="/assets/styles/folders.css">
 {{template "_tail"}}
@@ -88,10 +115,10 @@
 
 
 {{define "content-deletable-head"}}
-<li {{if .DeletedAt}}class="content-deleted" {{end}}>
+<li id="content-{{.RefID}}" {{if .DeletedAt}}class="content-deleted" {{end}}>
   <div
     class="border-b border-gray p-xs grid gap"
-    style="grid-template-columns: 1fr auto auto"
+    style="grid-template-columns: 1fr auto"
   >
 {{end}}
 
@@ -103,6 +130,10 @@
 {{end}}
 
 
+{{define "list-item-show"}}show{{end}}
+{{define "list-item-hide"}}hide{{end}}
+{{define "list-item-edit"}}edit{{end}}
+
 {{define "folder-list"}}
   {{template "content-deletable-head" .}}
   <a
@@ -110,27 +141,34 @@
     title="{{.Name}}"
     href="{{.RefID}}"
   >
-    <span class="folder text-one-line"><span>{{.Name}}</span></span>
+  <span class="folder text-one-line"><span>{{.Name}}</span></span>
   </a>
-  {{if .DeletedAt}}
-  <button
-    hx-patch="/folders/{{.ContentBase.RefID}}/restore"
-    hx-swap="outerHTML"
-    hx-target="closest li"
-    hx-target-error="next div"
-  >
-    Restore
-  </button>
-  {{else}}
-  <button
-    hx-delete="/folders/{{.ContentBase.RefID}}"
-    hx-swap="outerHTML"
-    hx-target="closest li"
-    hx-target-error="next div"
-  >
-    Delete
-  </button>
-  {{end}}
+  <div>
+    <button class="rename-folder" type="button" title="edit" onclick="updateContent('{{.Name}}', '{{.ContentBase.RefID}}')">
+      {{template "list-item-edit"}}
+    </button>
+    {{if .DeletedAt}}
+    <button
+      hx-patch="/folders/{{.ContentBase.RefID}}/restore"
+      hx-swap="outerHTML"
+      hx-target="closest li"
+      hx-target-error="next div"
+      title="show"
+    >
+    {{template "list-item-show"}}
+    </button>
+    {{else}}
+    <button
+      hx-patch="/folders/{{.ContentBase.RefID}}/hide"
+      hx-swap="outerHTML"
+      hx-target="closest li"
+      hx-target-error="next div"
+      title="hide"
+    >
+    {{template "list-item-hide"}}
+    </button>
+    {{end}}
+  </div>
   {{template "content-deletable-tail" .}}
 {{end}}
 
@@ -149,24 +187,31 @@
     </span>
     <span class="text-one-line"> <span>{{.Name}}</span></span>
   </span>
-  {{if .DeletedAt}}
-  <button
-    hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore"
-    hx-swap="outerHTML"
-    hx-target="closest li"
-    hx-target-error="next div"
-  >
-    Restore
-  </button>
-  {{else}}
-  <button
-    hx-delete="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}"
-    hx-swap="outerHTML"
-    hx-target="closest li"
-    hx-target-error="next div"
-  >
-    Delete
-  </button>
-  {{end}}
+  <div>
+    <button class="rename-media" type="button" title="edit">
+      {{template "list-item-edit"}}
+    </button>
+    {{if .DeletedAt}}
+    <button
+      hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore"
+      hx-swap="outerHTML"
+      hx-target="closest li"
+      hx-target-error="next div"
+      title="hide"
+    >
+    {{template "list-item-show"}}
+    </button>
+    {{else}}
+    <button
+      hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/hide"
+      hx-swap="outerHTML"
+      hx-target="closest li"
+      hx-target-error="next div"
+      title="show"
+    >
+    {{template "list-item-hide"}}
+    </button>
+    {{end}}
+  </div>
   {{template "content-deletable-tail" .}}
 {{end}}

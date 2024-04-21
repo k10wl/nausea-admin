@@ -30,22 +30,7 @@ customElements.define(
 
     connectedCallback() {
       this.htmxEvent();
-      const trigger = this.getAttribute("trigger");
-      const triggerEl = document.querySelector(trigger);
-      if (!triggerEl) {
-        throw new Error("Cannot find trigger for dialog");
-      }
-      triggerEl.addEventListener("click", () => {
-        const onopen = this.getAttribute("onopen");
-        if (onopen) {
-          try {
-            eval(onopen);
-          } catch (e) {
-            console.log(e);
-          }
-        }
-        this.dialog.showModal();
-      });
+      this.attachTriggers()
       this.dialog.addEventListener("click", (e) => {
         if (e.target === this.dialog) {
           this.closeAndReset();
@@ -60,6 +45,24 @@ customElements.define(
               .item(i)
               .addEventListener("click", () => this.closeAndReset());
           }
+        });
+      });
+    }
+
+    attachTriggers() {
+      const trigger = this.getAttribute("trigger");
+      const triggerList = document.querySelectorAll(trigger);
+      triggerList.forEach((triggerEl) => {
+        triggerEl.addEventListener("click", () => {
+          const onopen = this.getAttribute("onopen");
+          if (onopen) {
+            try {
+              eval(onopen);
+            } catch (e) {
+              console.log(e);
+            }
+          }
+          this.dialog.showModal();
         });
       });
     }
@@ -81,6 +84,7 @@ customElements.define(
     onSuccessfullHTMXRequest(e) {
       if (200 <= e.detail.xhr.status && e.detail.xhr.status < 400) {
         this.closeAndReset();
+        this.attachTriggers();
       }
     }
 
@@ -137,15 +141,14 @@ div.expanded {
   inset: 0;
   background: rgba(0,0,0,0.1);
   backdrop-filter: blur(5px);
-}
-::slotted(IMG) {
-  margin: auto;
-  object-fit: contain !important;
+  & ::slotted(IMG) {
+    margin: auto;
+    object-fit: contain !important;
+  }
 }
       `;
       container.append(img);
       root.append(style, container);
-      console.log("connected");
     }
   },
 );

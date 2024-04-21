@@ -8,7 +8,7 @@ class ShowDeleted extends HTMLElement {
     const shadow = this.attachShadow({ mode: "open" });
     const checkbox = document.createElement("input");
     const label = document.createElement("label");
-    label.innerText = "Show deleted";
+    label.innerText = "Show hidden";
     checkbox.type = "checkbox";
     checkbox.checked = $.get("showDeleted");
     toggleDeletedClass(checkbox.checked);
@@ -148,4 +148,21 @@ function cleanupUpload() {
   document.getElementById("upload-media-error").innerHTML = "";
   updatableInputFiles.clear();
   mediaPreview.clear();
+}
+
+document.querySelectorAll("button[class*=\"rename-\"").forEach((button) => {
+  button.addEventListener("click", (e) => {
+    e.stopPropagation()
+  })
+})
+
+
+const editFolder = document.getElementById("rename-folder-form")
+function updateContent(name, id) {
+  const base = editFolder.getAttribute('data-hx-base')
+  editFolder.setAttribute('hx-patch', base+id)
+  editFolder.setAttribute('hx-target', "#content-"+id)
+  const textarea = editFolder.querySelector('textarea[name="name"]')
+  textarea.textContent = name
+  htmx.process(editFolder)
 }

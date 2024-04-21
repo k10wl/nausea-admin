@@ -21,6 +21,16 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+#folder-contents li:has(:focus-within, :hover) {
+  & button {
+    opacity: 1;
+  }
+}
+
+#folder-contents li button {
+  opacity: 0;
+}
+
 .media--container {
   width: 3rem;
   height: 3rem;
@@ -49,14 +59,19 @@
   z-index: 10;
 }
 
-#create-folder-form.htmx-request button[type="submit"]:before,
-#upload-media-form.htmx-request button[type="submit"]:before {
+:is(
+    #create-folder-form,
+    #upload-media-form,
+    #rename-folder-form,
+    #rename-media-form
+  ).htmx-request
+  button[type="submit"]:before {
   content: "⏳ ";
   display: inline;
 }
 
 #upload-media-form:has(#upload-preview-container:empty) button[type="submit"] {
-  display: none
+  display: none;
 }
 
 #upload-preview-container {

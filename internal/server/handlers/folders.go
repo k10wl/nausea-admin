@@ -93,7 +93,7 @@ func (fh FoldersHandler) CreateFolder(w http.ResponseWriter, r *http.Request) {
 	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
 }
 
-func (fh FoldersHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
+func (fh FoldersHandler) MarkFolderAsDeleted(w http.ResponseWriter, r *http.Request) {
 	folderID := getFolderID(r)
 	if folderID == "" {
 		w.Header().Set("HX-Reswap", "innerHTML")
@@ -119,7 +119,7 @@ func (fh FoldersHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
 	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
 }
 
-func (fh FoldersHandler) DeleteMediaFromFolder(w http.ResponseWriter, r *http.Request) {
+func (fh FoldersHandler) MarkMediaAsDeletedInFolder(w http.ResponseWriter, r *http.Request) {
 	folderID := getFolderID(r)
 	mediaID := r.PathValue("media_id")
 	if folderID == "" {
@@ -181,6 +181,25 @@ func (fh FoldersHandler) RestoreFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
+}
+
+func (fh FoldersHandler) PathFolder(w http.ResponseWriter, r *http.Request) {
+	folderID := getFolderID(r)
+	if folderID == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("no folderID"))
+		return
+	}
+	var patch models.Folder
+	patch.Name = r.FormValue("name")
+	folder, _ := fh.DB.PatchFolder(folderID, patch)
+	asContent, err := folder.AsContent()
+	if err != nil {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("cannot show update, please refresh"))
+		return
+	}
 	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
 }
 

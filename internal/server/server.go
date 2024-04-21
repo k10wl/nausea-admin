@@ -40,9 +40,10 @@ func (s *Server) Run() error {
 	mux.HandleFunc("/folders/", fh.GetFoldersPage)
 	mux.HandleFunc("/folders/{id}", fh.GetFoldersPage)
 	mux.HandleFunc("POST /folders/{id}", fh.CreateFolder)
-	mux.HandleFunc("DELETE /folders/{id}", fh.DeleteFolder)
+	mux.HandleFunc("PATCH /folders/{id}", fh.PathFolder)
+	mux.HandleFunc("PATCH /folders/{id}/hide", fh.MarkFolderAsDeleted)
 	mux.HandleFunc("PATCH /folders/{id}/restore", fh.RestoreFolder)
-	mux.HandleFunc("DELETE /folders/{id}/{media_id}", fh.DeleteMediaFromFolder)
+	mux.HandleFunc("PATCH /folders/{id}/{media_id}/hide", fh.MarkMediaAsDeletedInFolder)
 	mux.HandleFunc("PATCH /folders/{id}/{media_id}/restore", fh.RestoreMediaInFolder)
 
 	mh := handlers.NewMediaHandler(*s.db, t, s.storage, l)

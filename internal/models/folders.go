@@ -100,3 +100,7 @@ func (f *Folder) MarkRestoredFolderContents(id string) {
 		}
 	}
 }
+
+func (f *Folder) Override(override Folder) {
+	f.Name = override.Name
+}

@@ -150,6 +150,58 @@ func (f *Firestore) MarkFolderRestoredByID(id string) (models.Folder, error) {
 	return folder, err
 }
 
+func (f *Firestore) PatchFolder(folderID string, patch models.Folder) (models.Folder, error) {
+	var folder models.Folder
+	err := f.client.RunTransaction(f.ctx, func(_ context.Context, tx *firestore.Transaction) error {
+		toPatchDoc := f.collectionFolders().Doc(folderID)
+		toPatchSnapshot, err := tx.Get(toPatchDoc)
+		if err != nil {
+			return err
+		}
+		var toPatchFolder models.Folder
+		err = toPatchSnapshot.DataTo(&toPatchFolder)
+		if err != nil {
+			return err
+		}
+		toPatchFolder.Override(patch)
+		parentDoc := f.collectionFolders().Doc(toPatchFolder.ParentID)
+		parentSnapshot, err := tx.Get(parentDoc)
+		if err != nil {
+			return err
+		}
+		var parentFolder models.Folder
+		err = parentSnapshot.DataTo(&parentFolder)
+		if err != nil {
+			return err
+		}
+		for i, val := range parentFolder.FolderContents {
+			if val.ContentBase.RefID == folderID {
+				asContent, err := toPatchFolder.AsContent()
+				if err != nil {
+					return err
+				}
+				parentFolder.FolderContents[i] = asContent
+				break
+			}
+		}
+		err = tx.Update(
+			parentDoc,
+			[]firestore.Update{
+				{Path: "folders", Value: parentFolder.FolderContents},
+			},
+		)
+		if err != nil {
+			return err
+		}
+		toPatchFolder.Update()
+		tx.Set(toPatchDoc, toPatchFolder)
+		folder = toPatchFolder
+		folder.ID.ID = folderID
+		return err
+	})
+	return folder, err
+}
+
 func (f *Firestore) UploadMediaToFolder(media []models.MediaContent, folderId string) error {
 	var folder models.Folder
 	folderRef := f.collectionFolders().Doc(folderId)
