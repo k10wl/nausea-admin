@@ -22,101 +22,130 @@ class ShowDeleted extends HTMLElement {
 }
 customElements.define("show-deleted-checkbox", ShowDeleted);
 
-function toggleDeletedClass(show) {
-  if (show) {
-    folderContentsEl.classList.add(SHOW_DELETED_CONTENT_CLASS);
-  } else {
-    folderContentsEl.classList.remove(SHOW_DELETED_CONTENT_CLASS);
+function toggleDeletedClass() {
+  folderContentsEl.classList.toggle(SHOW_DELETED_CONTENT_CLASS);
+}
+
+class UpdatableInputFiles {
+  /** @type {DataTransfer} @private */
+  #dataTransfer;
+
+  /** @type {HTMLInputElement} */
+  input;
+
+  /**
+   * @param {Object} data
+   * @param {HTMLInputElement} data.input
+   * @param {(files: FileList, offset: number) => void} data.onChange - triggers upon input change
+   */
+  constructor({ input, onChange }) {
+    this.input = input;
+    this.#dataTransfer = new DataTransfer();
+    input.addEventListener("change", () => {
+      onChange(input.files, this.#dataTransfer.files.length);
+      for (let i = 0; i < input.files.length; i++) {
+        this.#dataTransfer.items.add(input.files.item(i));
+      }
+      this.#syncFiles();
+    });
+  }
+
+  /** @param index {number} */
+  remove(index) {
+    if (index < 0 || index >= this.#dataTransfer.files.length) {
+      throw new Error(
+        `Can't access file at ${index} of ${this.#dataTransfer.files.length}`,
+      );
+    }
+    this.#dataTransfer.items.remove(index);
+    this.#syncFiles();
+  }
+
+  #syncFiles() {
+    this.input.files = this.#dataTransfer.files;
+  }
+
+  clear() {
+    this.#dataTransfer.items.clear();
+    this.#syncFiles();
   }
 }
 
-const dataTransfer = new DataTransfer();
-/** @type HTMLInputElement */
-const input = document.getElementById("media-file-input");
-
-function cleanupCreateFolder() {
-  document.getElementById('create-folder-error').innerHTML = ''
-}
-
-const uploadPreviewContainer = document.getElementById(
-  "upload-preview-container",
-);
-/** @type HTMLTemplateElement */
-const uploadPreviewTemplate = document.getElementById(
-  "upload-preview-template",
-);
-
-let filesArray = [];
-
-function removeFile(index) {
-  if (index < 0 || index >= filesArray.length) {
-    console.error(index, filesArray)
-    alert(
-      "error upon removing file, please start over again (smth wrong was removed)",
-    );
-    return;
+class MediaPreview {
+  /**
+    * @param {Object} data
+    * @param {HTMLElement} data.container
+    * @param {HTMLTemplateElement} data.template
+    * @param {(src: string) => HTMLElement} data.builder
+    */
+  constructor(data) {
+    this.container = data.container;
+    this.template = data.template;
   }
-  filesArray.splice(index, 1);
-  updateInputElement();
-}
-
-function updateInputElement() {
-  const dataTransfer = new DataTransfer();
-  for (let i = 0; i < filesArray.length; i++) {
-    dataTransfer.items.add(filesArray[i]);
+  /** @type {(files: FileList, offset?: number) => void} */
+  updateContainer(fileList, offset = 0) {
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList.item(i);
+      this.container.appendChild(this.#createPreview(file, offset));
+    }
   }
-  input.files = dataTransfer.files;
-}
 
-function updateFileDisplay(newFiles, offset) {
-  for (let i = 0; i < newFiles.length; i++) {
-    const file = newFiles[i];
+  /** @type {(files: File, offset?: number) => HTMLElement} */
+  #createPreview(file, offset = 0) {
     const reader = new FileReader();
-    const preview =
-      uploadPreviewTemplate.content.firstElementChild.cloneNode(true);
-    uploadPreviewContainer.appendChild(preview);
+    const preview = this.template.content.firstElementChild.cloneNode(true);
     reader.onload = (fileReaderEvent) => {
-      /** @type HTMLElement */
       preview
         .querySelector("img")
         .setAttribute("src", fileReaderEvent.target.result);
       const button = preview.querySelector("button");
       button.setAttribute("index", i + offset);
       button.addEventListener("click", (e) => {
-        removeFile(e.target.getAttribute("index"));
-        /** @type HTMLDivElement */
-        const parent = e.target.parentElement;
-        updateFollowingParrents(parent.nextElementSibling);
-        parent.remove();
+        updatableInputFiles.remove(e.target.getAttribute("index"));
+        this.#updateFollowingParrents(
+          e.target.parentElement.nextElementSibling,
+        );
+        e.target.parentElement.remove();
       });
     };
     reader.readAsDataURL(file);
+    return preview
+  }
+
+  clear() {
+    this.container.innerHTML = "";
+  }
+
+  #updateFollowingParrents(element) {
+    const button = parent.querySelector("button");
+    button.setAttribute("index", button.getAttribute("index") - 1);
+    if (!element.nextElementSibling) {
+      return;
+    }
+    this.#updateFollowingParrents(element.nextElementSibling);
   }
 }
 
-function updateFollowingParrents(parent) {
-  if (!parent) {
-    return;
-  }
-  /** @type HTMLButtonElement */
-  const button = parent.querySelector("button");
-  button.setAttribute("index", button.getAttribute("index") - 1);
-  updateFollowingParrents(parent.nextElementSibling);
-}
-
-input.addEventListener("change", () => {
-  const newFiles = [...input.files];
-  updateFileDisplay(newFiles, filesArray.length);
-  filesArray.push(...newFiles);
-  updateInputElement();
+const input = document.getElementById("media-file-input");
+const mediaPreview = new MediaPreview({
+  container: document.getElementById("upload-preview-container"),
+  template: document.getElementById("upload-preview-template"),
+});
+const updatableInputFiles = new UpdatableInputFiles({
+  input: input,
+  onChange: mediaPreview.updateContainer,
 });
 
+function cleanupCreateFolder() {
+  document.getElementById("create-folder-error").innerHTML = "";
+}
+
 function openFileInput() {
- input.click()
+  input.click();
 }
 
 function cleanupUpload() {
-  document.getElementById('upload-media-error').innerHTML = ''
-  uploadPreviewContainer.innerHTML = ''
-  filesArray = []
+  document.getElementById("upload-media-error").innerHTML = "";
+  updatableInputFiles.clear();
+  mediaPreview.clear();
 }
