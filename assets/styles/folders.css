@@ -6,7 +6,7 @@
   display: block;
 }
 
-#folder-contents:empty:before {
+#folder-contents:has(> :last-child:nth-child(2)):after {
   content: "**this folder appears to be empty**";
   display: block;
   padding: var(--space-sm);

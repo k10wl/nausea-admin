@@ -61,4 +61,4 @@ class NauseaStore {
   }
 }
 
-const $ = new NauseaStore(localStorage);
+const $nausea = new NauseaStore(localStorage);

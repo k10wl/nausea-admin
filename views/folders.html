@@ -149,7 +149,7 @@
   >
   <span class="folder text-one-line"><span>{{.Name}}</span></span>
   </a>
-  <div>
+  <div class="flex gap items-center">
   <button
     class="rename-folder"
     type="button"
@@ -192,48 +192,50 @@
     href="{{.RefID}}"
   >
     <span class="media--container">
-      <custom-scalable>
+      <custom-scalable class="flex items-center">
       <img src="{{.URL}}" class="h-full media--image">
       </custom-scalable>
     </span>
-    <span class="text-one-line"> <span>{{.Name}}</span></span>
+    <span class="text-one-line">
+      <span>{{.Name}}</span>{{if .Description}}<span class="text-gray"> | {{.Description}}</span>{{end}}
+    </span>
   </span>
-  <div>
-<button
-  class="rename-media"
-  type="button"
-  title="edit"
-  onclick="editMedia.open({
-  name: '{{.Name}}',
-  description: '{{.Description}}',
-  mediaId: '{{.ContentBase.ID.ID}}',
-  id: '{{.ContentBase.RefID}}',
-  folderId: '{{.ParentID}}',
-  })"
->
-  {{template "list-item-edit"}}
-</button>
-    {{if .DeletedAt}}
+  <div class="flex gap items-center">
     <button
-      hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore"
-      hx-swap="outerHTML"
-      hx-target="closest li"
-      hx-target-error="next div"
-      title="hide"
+      class="rename-media"
+      type="button"
+      title="edit"
+      onclick="editMedia.open({
+      name: '{{.Name}}',
+      description: '{{.Description}}',
+      mediaId: '{{.ContentBase.ID.ID}}',
+      id: '{{.ContentBase.RefID}}',
+      folderId: '{{.ParentID}}',
+      })"
     >
-    {{template "list-item-show"}}
+      {{template "list-item-edit"}}
     </button>
-    {{else}}
-    <button
-      hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/hide"
-      hx-swap="outerHTML"
-      hx-target="closest li"
-      hx-target-error="next div"
-      title="show"
-    >
-    {{template "list-item-hide"}}
-    </button>
-    {{end}}
+        {{if .DeletedAt}}
+        <button
+          hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore"
+          hx-swap="outerHTML"
+          hx-target="closest li"
+          hx-target-error="next div"
+          title="hide"
+        >
+        {{template "list-item-show"}}
+        </button>
+        {{else}}
+        <button
+          hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/hide"
+          hx-swap="outerHTML"
+          hx-target="closest li"
+          hx-target-error="next div"
+          title="show"
+        >
+        {{template "list-item-hide"}}
+        </button>
+        {{end}}
   </div>
   {{template "content-deletable-tail" .}}
 {{end}}

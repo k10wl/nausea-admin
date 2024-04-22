@@ -10,11 +10,11 @@ class ShowDeleted extends HTMLElement {
     const label = document.createElement("label");
     label.innerText = "Show hidden";
     checkbox.type = "checkbox";
-    checkbox.checked = $.get("showDeleted");
+    checkbox.checked = $nausea.get("showDeleted");
     toggleDeletedClass(checkbox.checked);
     checkbox.addEventListener("change", function () {
       toggleDeletedClass(checkbox.checked);
-      $.set("showDeleted", checkbox.checked);
+      $nausea.set("showDeleted", checkbox.checked);
     });
     label.appendChild(checkbox);
     shadow.appendChild(label);
@@ -22,8 +22,12 @@ class ShowDeleted extends HTMLElement {
 }
 customElements.define("show-deleted-checkbox", ShowDeleted);
 
-function toggleDeletedClass() {
-  folderContentsEl.classList.toggle(SHOW_DELETED_CONTENT_CLASS);
+function toggleDeletedClass(show) {
+  if (show) {
+    folderContentsEl.classList.add(SHOW_DELETED_CONTENT_CLASS);
+  } else {
+    folderContentsEl.classList.remove(SHOW_DELETED_CONTENT_CLASS);
+  }
 }
 
 class UpdatableInputFiles {
