@@ -85,17 +85,18 @@ class MediaPreview {
   constructor(data) {
     this.container = data.container;
     this.template = data.template;
+    this.updateContainer = this.updateContainer.bind(this)
   }
   /** @type {(files: FileList, offset?: number) => void} */
   updateContainer(fileList, offset = 0) {
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList.item(i);
-      this.container.appendChild(this.#createPreview(file, offset));
+      this.container.appendChild(this.#createPreview(file, i + offset));
     }
   }
 
   /** @type {(files: File, offset?: number) => HTMLElement} */
-  #createPreview(file, offset = 0) {
+  #createPreview(file, i) {
     const reader = new FileReader();
     const preview = this.template.content.firstElementChild.cloneNode(true);
     reader.onload = (fileReaderEvent) => {
@@ -103,12 +104,14 @@ class MediaPreview {
         .querySelector("img")
         .setAttribute("src", fileReaderEvent.target.result);
       const button = preview.querySelector("button");
-      button.setAttribute("index", i + offset);
+      button.setAttribute("index", i);
       button.addEventListener("click", (e) => {
         updatableInputFiles.remove(e.target.getAttribute("index"));
+        if (e.target.parentElement.nextElementSibling) {
         this.#updateFollowingParrents(
           e.target.parentElement.nextElementSibling,
         );
+        }
         e.target.parentElement.remove();
       });
     };
@@ -121,7 +124,7 @@ class MediaPreview {
   }
 
   #updateFollowingParrents(element) {
-    const button = parent.querySelector("button");
+    const button = element.querySelector("button");
     button.setAttribute("index", button.getAttribute("index") - 1);
     if (!element.nextElementSibling) {
       return;
