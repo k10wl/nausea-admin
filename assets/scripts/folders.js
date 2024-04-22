@@ -77,15 +77,15 @@ class UpdatableInputFiles {
 
 class MediaPreview {
   /**
-    * @param {Object} data
-    * @param {HTMLElement} data.container
-    * @param {HTMLTemplateElement} data.template
-    * @param {(src: string) => HTMLElement} data.builder
-    */
+   * @param {Object} data
+   * @param {HTMLElement} data.container
+   * @param {HTMLTemplateElement} data.template
+   * @param {(src: string) => HTMLElement} data.builder
+   */
   constructor(data) {
     this.container = data.container;
     this.template = data.template;
-    this.updateContainer = this.updateContainer.bind(this)
+    this.updateContainer = this.updateContainer.bind(this);
   }
   /** @type {(files: FileList, offset?: number) => void} */
   updateContainer(fileList, offset = 0) {
@@ -108,15 +108,15 @@ class MediaPreview {
       button.addEventListener("click", (e) => {
         updatableInputFiles.remove(e.target.getAttribute("index"));
         if (e.target.parentElement.nextElementSibling) {
-        this.#updateFollowingParrents(
-          e.target.parentElement.nextElementSibling,
-        );
+          this.#updateFollowingParrents(
+            e.target.parentElement.nextElementSibling,
+          );
         }
         e.target.parentElement.remove();
       });
     };
     reader.readAsDataURL(file);
-    return preview
+    return preview;
   }
 
   clear() {
@@ -157,57 +157,60 @@ function cleanupUpload() {
   mediaPreview.clear();
 }
 
-document.querySelectorAll("button[class*=\"rename-\"").forEach((button) => {
+document.querySelectorAll('button[class*="rename-"').forEach((button) => {
   button.addEventListener("click", (e) => {
-    e.stopPropagation()
-  })
-})
-
-
+    e.stopPropagation();
+  });
+});
 
 class EditFolder {
-  element
+  element;
 
   constructor(element) {
-    this.element = element
+    this.element = element;
   }
-  
+
   /** @param {{name: string, id: string}} data  */
   open(data) {
-  this.updateForm(data)
-  htmx.process(this.element)
-  this.updateInputs(data)
+    this.updateForm(data);
+    htmx.process(this.element);
+    this.updateInputs(data);
   }
 
   /** @param {{name: string, id: string}} data  */
   updateForm(data) {
-    const base = this.element.getAttribute('data-hx-base')
-    this.element.setAttribute('hx-patch', base+data.id)
-    this.element.setAttribute('hx-target', "#content-"+data.id)
+    const base = this.element.getAttribute("data-hx-base");
+    this.element.setAttribute("hx-patch", base + data.id);
+    this.element.setAttribute("hx-target", "#content-" + data.id);
   }
 
   /** @param {{name: string, id: string}} data  */
   updateInputs(data) {
-    const nameEl = this.element.querySelector('textarea[name="name"]')
-    nameEl.textContent = data.name
+    const nameEl = this.element.querySelector('textarea[name="name"]');
+    nameEl.textContent = data.name;
   }
 }
 
 class EditMedia extends EditFolder {
   /** @param {{name: string, description: string, mediaId: string, id: string, folderId: string}} data  */
   updateInputs(data) {
-    super.updateInputs(data)
-    const nameEl = this.element.querySelector('textarea[name="description"]')
-    nameEl.textContent = data.description
+    super.updateInputs(data);
+    const nameEl = this.element.querySelector('textarea[name="description"]');
+    nameEl.textContent = data.description;
   }
 
   /** @param {{name: string, description: string, mediaId: string, id: string, folderId: string}} data  */
   updateForm(data) {
-    const base = this.element.getAttribute('data-hx-base')
-    this.element.setAttribute('hx-patch', `${base}${data.folderId}/${data.mediaId}`)
-    this.element.setAttribute('hx-target', "#content-"+data.id)
+    const base = this.element.getAttribute("data-hx-base");
+    this.element.setAttribute(
+      "hx-patch",
+      `${base}${data.folderId}/${data.mediaId}`,
+    );
+    this.element.setAttribute("hx-target", "#content-" + data.id);
   }
 }
 
-const editFolder = new EditFolder( document.getElementById("rename-folder-form"))
-const editMedia = new EditMedia( document.getElementById("rename-media-form"))
+const editFolder = new EditFolder(
+  document.getElementById("rename-folder-form"),
+);
+const editMedia = new EditMedia(document.getElementById("rename-media-form"));

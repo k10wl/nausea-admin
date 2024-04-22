@@ -30,7 +30,7 @@ customElements.define(
 
     connectedCallback() {
       this.htmxEvent();
-      this.attachTriggers()
+      this.attachTriggers();
       this.dialog.addEventListener("click", (e) => {
         if (e.target === this.dialog) {
           this.closeAndReset();
