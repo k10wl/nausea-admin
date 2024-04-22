@@ -92,7 +92,13 @@
 </custom-dialog>
 
 <custom-dialog trigger=".rename-media">
-  <form id="rename-media-form" hx-post="/" class="grid gap">
+  <form
+    id="rename-media-form"
+    data-hx-base="/folders/"
+    hx-patch=""
+    hx-swap="outerHTML"
+    class="grid gap"
+    >
     <label class="grid">Name
       <textarea name="name"></textarea>
     </label class="grid">
@@ -144,9 +150,14 @@
   <span class="folder text-one-line"><span>{{.Name}}</span></span>
   </a>
   <div>
-    <button class="rename-folder" type="button" title="edit" onclick="updateContent('{{.Name}}', '{{.ContentBase.RefID}}')">
-      {{template "list-item-edit"}}
-    </button>
+  <button
+    class="rename-folder"
+    type="button"
+    title="edit"
+    onclick="editFolder.open({name: '{{.Name}}', id: '{{.ContentBase.RefID}}'})"
+  >
+    {{template "list-item-edit"}}
+  </button>
     {{if .DeletedAt}}
     <button
       hx-patch="/folders/{{.ContentBase.RefID}}/restore"
@@ -188,9 +199,20 @@
     <span class="text-one-line"> <span>{{.Name}}</span></span>
   </span>
   <div>
-    <button class="rename-media" type="button" title="edit">
-      {{template "list-item-edit"}}
-    </button>
+<button
+  class="rename-media"
+  type="button"
+  title="edit"
+  onclick="editMedia.open({
+  name: '{{.Name}}',
+  description: '{{.Description}}',
+  mediaId: '{{.ContentBase.ID.ID}}',
+  id: '{{.ContentBase.RefID}}',
+  folderId: '{{.ParentID}}',
+  })"
+>
+  {{template "list-item-edit"}}
+</button>
     {{if .DeletedAt}}
     <button
       hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore"

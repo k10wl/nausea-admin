@@ -175,7 +175,7 @@ func (f *Firestore) PatchFolder(folderID string, patch models.Folder) (models.Fo
 			return err
 		}
 		for i, val := range parentFolder.FolderContents {
-			if val.ContentBase.RefID == folderID {
+			if val.RefID == folderID {
 				asContent, err := toPatchFolder.AsContent()
 				if err != nil {
 					return err
@@ -241,4 +241,30 @@ func (f *Firestore) MarkMediaAsRestoredInFolder(mediaID string, folderID string)
 		{Path: "media", Value: folder.MediaContents},
 	})
 	return folder.MediaContents[i], err
+}
+
+func (f *Firestore) UpdateMediaInFolder(patch models.MediaContent) (models.MediaContent, error) {
+	var folder models.Folder
+	folderDoc := f.collectionFolders().Doc(patch.ParentID)
+	folderSnapshot, err := folderDoc.Get(context.TODO())
+	if err != nil {
+		return models.MediaContent{}, err
+	}
+	err = folderSnapshot.DataTo(&folder)
+	if err != nil {
+		return models.MediaContent{}, err
+	}
+	var media models.MediaContent
+	for i, v := range folder.MediaContents {
+		if v.ID.ID == patch.ID.ID {
+			v.Override(patch)
+			folder.MediaContents[i] = v
+			media = v
+			break
+		}
+	}
+	_, err = folderDoc.Update(context.TODO(), []firestore.Update{
+		{Path: "media", Value: folder.MediaContents},
+	})
+	return media, err
 }

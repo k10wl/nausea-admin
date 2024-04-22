@@ -112,7 +112,12 @@ func (fh FoldersHandler) MarkFolderAsDeleted(w http.ResponseWriter, r *http.Requ
 	}
 	asContent, err := folder.AsContent()
 	if err != nil {
-		utils.ErrorResponse(w, r, http.StatusInternalServerError, errors.New("folder is deleted, reload to update UI"))
+		utils.ErrorResponse(
+			w,
+			r,
+			http.StatusInternalServerError,
+			errors.New("folder is deleted, reload to update UI"),
+		)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -177,14 +182,19 @@ func (fh FoldersHandler) RestoreFolder(w http.ResponseWriter, r *http.Request) {
 	}
 	asContent, err := folder.AsContent()
 	if err != nil {
-		utils.ErrorResponse(w, r, http.StatusInternalServerError, errors.New("folder is restored, reload to update UI"))
+		utils.ErrorResponse(
+			w,
+			r,
+			http.StatusInternalServerError,
+			errors.New("folder is restored, reload to update UI"),
+		)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
 }
 
-func (fh FoldersHandler) PathFolder(w http.ResponseWriter, r *http.Request) {
+func (fh FoldersHandler) PatchFolder(w http.ResponseWriter, r *http.Request) {
 	folderID := getFolderID(r)
 	if folderID == "" {
 		w.Header().Set("HX-Reswap", "innerHTML")
@@ -197,10 +207,40 @@ func (fh FoldersHandler) PathFolder(w http.ResponseWriter, r *http.Request) {
 	asContent, err := folder.AsContent()
 	if err != nil {
 		w.Header().Set("HX-Reswap", "innerHTML")
-		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("cannot show update, please refresh"))
+		utils.ErrorResponse(
+			w,
+			r,
+			http.StatusBadRequest,
+			errors.New("cannot show update, please refresh"),
+		)
 		return
 	}
 	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
+}
+
+func (fh FoldersHandler) EditFolderMedia(w http.ResponseWriter, r *http.Request) {
+	folderID := getFolderID(r)
+	mediaID := r.PathValue("media_id")
+	if folderID == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("no folderID"))
+		return
+	}
+	name := r.FormValue("name")
+	description := r.FormValue("description")
+	update := models.MediaContent{
+		ContentBase: models.ContentBase{ID: models.ID{ID: mediaID}},
+		Name:        name,
+		Description: description,
+		ParentID:    folderID,
+	}
+	mediaContent, err := fh.DB.UpdateMediaInFolder(update)
+	if err != nil {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("failed to update media"))
+		return
+	}
+	fh.Template.ExecuteTemplate(w, "media-list", mediaContent)
 }
 
 func getFolderID(r *http.Request) string {

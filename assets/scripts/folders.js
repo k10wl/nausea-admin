@@ -157,12 +157,50 @@ document.querySelectorAll("button[class*=\"rename-\"").forEach((button) => {
 })
 
 
-const editFolder = document.getElementById("rename-folder-form")
-function updateContent(name, id) {
-  const base = editFolder.getAttribute('data-hx-base')
-  editFolder.setAttribute('hx-patch', base+id)
-  editFolder.setAttribute('hx-target', "#content-"+id)
-  const textarea = editFolder.querySelector('textarea[name="name"]')
-  textarea.textContent = name
-  htmx.process(editFolder)
+
+class EditFolder {
+  element
+
+  constructor(element) {
+    this.element = element
+  }
+  
+  /** @param {{name: string, id: string}} data  */
+  open(data) {
+  this.updateForm(data)
+  htmx.process(this.element)
+  this.updateInputs(data)
+  }
+
+  /** @param {{name: string, id: string}} data  */
+  updateForm(data) {
+    const base = this.element.getAttribute('data-hx-base')
+    this.element.setAttribute('hx-patch', base+data.id)
+    this.element.setAttribute('hx-target', "#content-"+data.id)
+  }
+
+  /** @param {{name: string, id: string}} data  */
+  updateInputs(data) {
+    const nameEl = this.element.querySelector('textarea[name="name"]')
+    nameEl.textContent = data.name
+  }
 }
+
+class EditMedia extends EditFolder {
+  /** @param {{name: string, description: string, mediaId: string, id: string, folderId: string}} data  */
+  updateInputs(data) {
+    super.updateInputs(data)
+    const nameEl = this.element.querySelector('textarea[name="description"]')
+    nameEl.textContent = data.description
+  }
+
+  /** @param {{name: string, description: string, mediaId: string, id: string, folderId: string}} data  */
+  updateForm(data) {
+    const base = this.element.getAttribute('data-hx-base')
+    this.element.setAttribute('hx-patch', `${base}${data.folderId}/${data.mediaId}`)
+    this.element.setAttribute('hx-target', "#content-"+data.id)
+  }
+}
+
+const editFolder = new EditFolder( document.getElementById("rename-folder-form"))
+const editMedia = new EditMedia( document.getElementById("rename-media-form"))

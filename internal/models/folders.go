@@ -104,3 +104,8 @@ func (f *Folder) MarkRestoredFolderContents(id string) {
 func (f *Folder) Override(override Folder) {
 	f.Name = override.Name
 }
+
+func (m *MediaContent) Override(override MediaContent) {
+	m.Name = override.Name
+	m.Description = override.Description
+}
