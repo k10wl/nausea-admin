@@ -153,3 +153,9 @@
 .h-full {
   height: 100%;
 }
+
+form.htmx-request
+  button[type="submit"]:before {
+  content: "⏳ ";
+  display: inline;
+}

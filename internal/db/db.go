@@ -13,6 +13,8 @@ type IDB interface {
 	MarkMediaAsRestoredInFolder(mediaID string, folderID string) (models.MediaContent, error)
 	PatchFolder(folderID string, patch models.Folder) (models.Folder, error)
 	UpdateMediaInFolder(media models.MediaContent) (models.MediaContent, error)
+	GetAbout() (models.About, error)
+	SetAbout(about models.About) error
 }
 
 type DB struct {
@@ -63,4 +65,12 @@ func (db DB) CreateMedia(media models.Media) error {
 
 func (db DB) UpdateMediaInFolder(media models.MediaContent) (models.MediaContent, error) {
 	return db.client.UpdateMediaInFolder(media)
+}
+
+func (db DB) GetAbout() (models.About, error) {
+	return db.client.GetAbout()
+}
+
+func (db DB) SetAbout(about models.About) error {
+	return db.client.SetAbout(about)
 }

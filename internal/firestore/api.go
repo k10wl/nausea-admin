@@ -11,22 +11,18 @@ type FirestoreLink struct {
 	Text string `firestore:"text"`
 }
 
-func (f *Firestore) SetAbout(models.About) error {
-	return nil
-}
-
-func (f *Firestore) GetBio() (string, error) {
+func (f *Firestore) GetAbout() (models.About, error) {
 	var about models.About
 	doc, err := f.docAbout().Get(f.ctx)
 	if err != nil {
-		return "", err
+		return about, err
 	}
 	err = doc.DataTo(&about)
-	return about.Bio, err
+	return about, err
 }
 
-func (f *Firestore) SetBio(b string) error {
-	_, err := f.docAbout().Update(f.ctx, []firestore.Update{{Path: "bio", Value: b}})
+func (f *Firestore) SetAbout(about models.About) error {
+	_, err := f.docAbout().Set(f.ctx, about)
 	return err
 }
 

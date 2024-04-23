@@ -1,0 +1,23 @@
+{{define "/about"}} {{template "_head" .}}
+<div hx-ext="response-targets">
+  <h1>About</h1>
+  <form
+    hx-patch="/about"
+    hx-swap="none"
+    hx-target-error="#about-text-error"
+    class="grid"
+  >
+    <div id="about-text-error"></div>
+    <div class = "grid gap">
+      <label class="grid">
+        Bio
+        <textarea is="custom-auto-resize" name="bio">{{.Props.About.Bio}}</textarea>
+      </label>
+      <span>
+        <button type="submit">Update</button>
+      </span>
+    </div>
+  </form>
+  <p></p>
+</div>
+{{template "_tail"}} {{end}}

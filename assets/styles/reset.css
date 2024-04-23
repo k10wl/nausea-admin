@@ -38,6 +38,11 @@ select {
   font: inherit;
 }
 
+textarea {
+  min-width: 60ch;
+  resize: none;
+}
+
 button {
   cursor: pointer;
 }

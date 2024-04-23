@@ -36,6 +36,10 @@ func (s *Server) Run() error {
 	hh := handlers.NewHomeHandler(t)
 	mux.HandleFunc("/", hh.GetHomePage)
 
+	ah := handlers.NewAboutHandler(*s.db, t)
+	mux.HandleFunc("/about/", ah.GetAboutPage)
+	mux.HandleFunc("PATCH /about/", ah.PatchAbout)
+
 	fh := handlers.NewFoldersHandler(*s.db, t)
 	mux.HandleFunc("/folders/", fh.GetFoldersPage)
 	mux.HandleFunc("/folders/{id}", fh.GetFoldersPage)

@@ -152,3 +152,32 @@ div.expanded {
     }
   },
 );
+
+customElements.define(
+  "custom-auto-resize",
+  class AutoResize extends HTMLTextAreaElement {
+    static observedAttributes = ["textContent"];
+
+    constructor() {
+      super()
+      this.updateHeight = this.updateHeight.bind(this)
+    }
+
+    connectedCallback() {
+      this.style.overflow = "hidden"
+      this.addEventListener('input', this.updateHeight)
+      this.updateHeight()
+    }
+
+    updateHeight() {
+    // aight, this is weird, but without timeout it does not update properly
+    // I have neither no idea why the fuck it does that nor time to figure out
+      setTimeout(() => {
+        this.style.height = '1px'
+        this.style.height = `${this.scrollHeight}px`
+      })
+    }
+
+  },
+  {extends: "textarea"}
+)

@@ -59,17 +59,6 @@
   z-index: 10;
 }
 
-:is(
-    #create-folder-form,
-    #upload-media-form,
-    #rename-folder-form,
-    #rename-media-form
-  ).htmx-request
-  button[type="submit"]:before {
-  content: "⏳ ";
-  display: inline;
-}
-
 #upload-media-form:has(#upload-preview-container:empty) button[type="submit"] {
   display: none;
 }

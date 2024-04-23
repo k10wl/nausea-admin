@@ -186,8 +186,10 @@ class EditFolder {
 
   /** @param {{name: string, id: string}} data  */
   updateInputs(data) {
+    /** @type HTMLTextAreaElement */
     const nameEl = this.element.querySelector('textarea[name="name"]');
-    nameEl.textContent = data.name;
+    nameEl.value = data.name;
+    nameEl.updateHeight()
   }
 }
 
@@ -195,8 +197,10 @@ class EditMedia extends EditFolder {
   /** @param {{name: string, description: string, mediaId: string, id: string, folderId: string}} data  */
   updateInputs(data) {
     super.updateInputs(data);
-    const nameEl = this.element.querySelector('textarea[name="description"]');
-    nameEl.textContent = data.description;
+    /** @type HTMLTextAreaElement */
+    const descriptionEl = this.element.querySelector('textarea[name="description"]');
+    descriptionEl.value = data.description;
+    descriptionEl.updateHeight()
   }
 
   /** @param {{name: string, description: string, mediaId: string, id: string, folderId: string}} data  */
