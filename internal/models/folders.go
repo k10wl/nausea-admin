@@ -30,6 +30,7 @@ type FolderContent struct {
 
 type MediaContent struct {
 	ContentBase
+	MediaSize
 	URL         string `firestore:"URL"`
 	Name        string `firestore:"name"`
 	ParentID    string `firestore:"parentID"`

@@ -11,17 +11,22 @@ import (
 	"github.com/google/uuid"
 )
 
+type Media struct {
+	Reader io.Reader
+	Name   string
+}
+
 const tmpDir = "tmp"
 
-func ToWebp(input io.Reader) (io.Reader, string, error) {
+func ToWebp(input io.Reader) (*Media, error) {
 	err := ensureDir(tmpDir)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	format := "webp"
 	id, err := uuid.NewUUID()
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	name := fmt.Sprintf("%s.%s", id, format)
 	inDir := filepath.Join(".", tmpDir, name)
@@ -39,11 +44,14 @@ func ToWebp(input io.Reader) (io.Reader, string, error) {
 	cmd.Stdin = input
 	cmd.Stderr = &errBuf
 	if err := cmd.Start(); err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	cmd.Wait()
 	reader, err := toBuffer(inDir)
-	return reader, name, err
+	if err != nil {
+		return nil, err
+	}
+	return &Media{Reader: reader, Name: name}, err
 }
 
 func ensureDir(name string) error {
@@ -59,6 +67,10 @@ func toBuffer(name string) (io.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err != nil {
+		return nil, err
+	}
 	err = os.Remove(name)
-	return bytes.NewReader(data), err
+	r := bytes.NewReader(data)
+	return r, err
 }

@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.13
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.47.7
 	github.com/google/uuid v1.4.0
+	golang.org/x/image v0.15.0
 )
 
 require (

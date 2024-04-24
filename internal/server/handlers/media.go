@@ -1,13 +1,10 @@
 package handlers
 
 import (
-	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
-	"os/exec"
 
 	"nausea-admin/internal/converter"
 	"nausea-admin/internal/db"
@@ -15,6 +12,8 @@ import (
 	"nausea-admin/internal/server/logger"
 	"nausea-admin/internal/server/template"
 	"nausea-admin/internal/storage"
+
+	"golang.org/x/image/webp"
 )
 
 type MediaHandler struct {
@@ -24,24 +23,9 @@ type MediaHandler struct {
 	Logger   logger.ServerLogger
 }
 
-func Converter(f *multipart.File, cmd *exec.Cmd) (*bytes.Reader, error) {
-	// Ensure the file is read from the beginning if reused
-	if seeker, ok := (*f).(io.Seeker); ok {
-		_, err := seeker.Seek(0, io.SeekStart)
-		if err != nil {
-			log.Printf("Error seeking file: %v", err)
-			return nil, err
-		}
-	}
-
-	var stdoutBuf bytes.Buffer
-	cmd.Stdin = *f
-	cmd.Stdout = &stdoutBuf
-	if err := cmd.Run(); err != nil {
-		return nil, err
-	}
-
-	return bytes.NewReader(stdoutBuf.Bytes()), nil
+type urlWithMediaSize struct {
+	URL string
+	models.MediaSize
 }
 
 func NewMediaHandler(
@@ -73,14 +57,14 @@ func (mh MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	failed := []string{}
 	dbDocs := []models.Media{}
 	for _, url := range urls {
-		media, err := models.NewMedia(url)
+		media, err := models.NewMedia(url.URL, url.MediaSize)
 		if err != nil {
-			failed = append(failed, url)
+			failed = append(failed, url.URL)
 			continue
 		}
 		err = mh.DB.CreateMedia(media)
 		if err != nil {
-			failed = append(failed, url)
+			failed = append(failed, url.URL)
 			continue
 		}
 		dbDocs = append(dbDocs, media)
@@ -113,41 +97,15 @@ func (mh MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 func filesIntoBucket(
 	files []*multipart.FileHeader,
 	uploader func(io.Reader, string) (string, error),
-) ([]string, []error) {
-	type progressError struct {
-		i   int
-		err error
-	}
-	urls := []string{}
+) ([]urlWithMediaSize, []error) {
+	urls := []urlWithMediaSize{}
 	errs := []error{}
-	errChan := make(chan progressError)
-	urlChan := make(chan string)
-	for i, fileHeader := range files {
-		go func(
-			i int,
-			fileHeader *multipart.FileHeader,
-			errChan chan progressError,
-			urlChan chan string,
-		) {
-			file, err := fileHeader.Open()
-			if err != nil {
-				errChan <- progressError{i, err}
-				return
-			}
-			defer file.Close()
-			reader, name, err := converter.ToWebp(file)
-			if err != nil {
-				errChan <- progressError{i, err}
-				return
-			}
-			url, err := uploader(reader, name)
-			if err != nil {
-				errChan <- progressError{i, err}
-			}
-			urlChan <- url
-		}(
-			i,
+	errChan := make(chan error)
+	urlChan := make(chan urlWithMediaSize)
+	for _, fileHeader := range files {
+		go processFile(
 			fileHeader,
+			uploader,
 			errChan,
 			urlChan,
 		)
@@ -155,7 +113,7 @@ func filesIntoBucket(
 	for {
 		select {
 		case err := <-errChan:
-			errs = append(errs, err.err)
+			errs = append(errs, err)
 		case url := <-urlChan:
 			urls = append(urls, url)
 		}
@@ -164,4 +122,39 @@ func filesIntoBucket(
 		}
 	}
 	return urls, errs
+}
+
+func processFile(
+	fileHeader *multipart.FileHeader,
+	uploader func(io.Reader, string) (string, error),
+	errChan chan error,
+	urlChan chan urlWithMediaSize,
+) {
+	file, err := fileHeader.Open()
+	if err != nil {
+		errChan <- err
+		return
+	}
+	defer file.Close()
+	media, err := converter.ToWebp(file)
+	if err != nil {
+		errChan <- err
+		return
+	}
+	img, err := webp.DecodeConfig(media.Reader)
+	if err != nil {
+		errChan <- err
+		return
+	}
+	url, err := uploader(media.Reader, media.Name)
+	if err != nil {
+		errChan <- err
+	}
+	urlChan <- urlWithMediaSize{
+		URL: url,
+		MediaSize: models.MediaSize{
+			Width:  img.Width,
+			Height: img.Height,
+		},
+	}
 }
