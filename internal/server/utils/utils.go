@@ -13,6 +13,7 @@ var links = []struct {
 	Name string
 }{
 	{URL: "/", Name: "Home"},
+	{URL: "/meta/", Name: "Meta"},
 	{URL: "/about/", Name: "About"},
 	{URL: "/folders/", Name: "Folders"},
 }

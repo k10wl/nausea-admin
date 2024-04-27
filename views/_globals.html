@@ -15,6 +15,7 @@
       media="(prefers-color-scheme: dark)"
     />
     <script async src="/assets/scripts/storage.js"></script>
+    <script async src="/assets/scripts/interactions.js"></script>
     <script async src="/assets/scripts/custom-elements.js"></script>
     <script
       src="https://unpkg.com/htmx.org@1.9.11"
@@ -46,7 +47,7 @@
       {{range .AsideLinks}}
       <li>
         <a {{if .Active}}class="underline" {{end}} href="{{.URL}}">
-          {{.Name}}
+          {{if .Active}}> {{end}}{{.Name}}
         </a>
       </li>
       {{end}}

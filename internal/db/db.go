@@ -15,6 +15,8 @@ type IDB interface {
 	UpdateMediaInFolder(media models.MediaContent) (models.MediaContent, error)
 	GetAbout() (models.About, error)
 	SetAbout(about models.About) error
+	GetMeta() (models.Meta, error)
+	SetMeta(models.Meta) error
 }
 
 type DB struct {
@@ -73,4 +75,12 @@ func (db DB) GetAbout() (models.About, error) {
 
 func (db DB) SetAbout(about models.About) error {
 	return db.client.SetAbout(about)
+}
+
+func (db DB) GetMeta() (models.Meta, error) {
+	return db.client.GetMeta()
+}
+
+func (db DB) SetMeta(meta models.Meta) error {
+	return db.client.SetMeta(meta)
 }
