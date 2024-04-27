@@ -1,23 +1,44 @@
-{{define "/about"}} {{template "_head" .}}
+{{define "/about"}}{{template "_head" .}}
 <div hx-ext="response-targets">
   <h1>About</h1>
   <form
-    hx-patch="/about"
+    hx-encoding= "multipart/form-data"
+    hx-patch="/about/"
     hx-swap="none"
     hx-target-error="#about-text-error"
+    hx-on::after-request="resetFileInput()"
     class="grid"
   >
     <div id="about-text-error"></div>
-    <div class = "grid gap">
-      <label class="grid">
-        Bio
-        <textarea is="custom-auto-resize" name="bio">{{.Props.About.Bio}}</textarea>
+    <div id="content" class="flex gap flex-wrap">
+      <div>
+        <label class="cursor-pointer">
+          Select about image
+        <input
+          type="file"
+          accept="image/*"
+          onchange="onAboutImageChange(event)"
+          hidden
+          name="image"
+          id="about-input"
+        />
+        </label>
+        <img src="{{.Props.About.Image.URL}}" id="about-image" class="cursor-pointer" />
+      </div>
+      <label>
+        <p>Bio</p>
+        <textarea is="custom-auto-resize" style="width: 100%;" name="bio">{{.Props.About.Bio}}</textarea>
       </label>
-      <span>
-        <button type="submit">Update</button>
-      </span>
     </div>
+    <span>
+      <button class="block mt-sm ml-auto" type="submit">Save</button>
+    </span>
   </form>
-  <p></p>
 </div>
-{{template "_tail"}} {{end}}
+<script async src="/assets/scripts/about.js"></script>
+<style>
+#content > * {
+  flex: 1 1 300px;
+}
+</style>
+{{template "_tail"}}{{end}}

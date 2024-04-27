@@ -7,17 +7,20 @@ import (
 	"nausea-admin/internal/models"
 	"nausea-admin/internal/server/template"
 	"nausea-admin/internal/server/utils"
+	"nausea-admin/internal/storage"
 )
 
 type AboutHandler struct {
 	Template template.Template
-	DB       db.DB
+	DB       *db.DB
+	Storage  *storage.Storage
 }
 
-func NewAboutHandler(db db.DB, t template.Template) AboutHandler {
+func NewAboutHandler(db *db.DB, t template.Template, s *storage.Storage) AboutHandler {
 	return AboutHandler{
 		DB:       db,
 		Template: t,
+		Storage:  s,
 	}
 }
 
@@ -35,10 +38,32 @@ func (h AboutHandler) GetAboutPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h AboutHandler) PatchAbout(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(1 << 30) // memory limit of 1GB
+	if err != nil {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusInternalServerError, err)
+		return
+	}
 	var patch models.About
-	patch.Bio = r.FormValue("bio")
+	patch.Bio = r.MultipartForm.Value["bio"][0]
+	file := r.MultipartForm.File["image"]
+	if len(file) == 1 {
+		url, errs := filesIntoBucket(file, h.Storage.AddObject)
+		if len(errs) != 0 {
+			w.Header().Set("HX-Reswap", "innerHTML")
+			utils.ErrorResponse(w, r, http.StatusInternalServerError, errs[0])
+			return
+		}
+		img, err := models.NewMedia(url[0].URL, url[0].MediaSize)
+		if err != nil {
+			w.Header().Set("HX-Reswap", "innerHTML")
+			utils.ErrorResponse(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		patch.Image = &img
+	}
 	patch.Update()
-	err := h.DB.SetAbout(patch)
+	err = h.DB.SetAbout(patch)
 	if err != nil {
 		w.Header().Set("HX-Reswap", "innerHTML")
 		utils.ErrorResponse(w, r, http.StatusInternalServerError, err)

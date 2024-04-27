@@ -26,7 +26,8 @@ type Contacts struct {
 }
 
 type About struct {
-	Bio string `firestore:"bio"`
+	Bio   string `firestore:"bio,omitempty"`
+	Image *Media `firestore:"image,omitempty"`
 	Timestamps
 }
 

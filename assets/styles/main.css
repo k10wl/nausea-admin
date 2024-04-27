@@ -44,6 +44,10 @@
   display: flex;
 }
 
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
 .block {
   display: block;;
 }
@@ -85,6 +89,10 @@
 
 .mr-md {
   margin-right: var(--space-md);
+}
+
+.ml-auto {
+  margin-left: auto;
 }
 
 .p-xs {
@@ -152,6 +160,10 @@
 
 .h-full {
   height: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 form.htmx-request
