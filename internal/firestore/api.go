@@ -24,10 +24,6 @@ func (f *Firestore) GetAbout() (models.About, error) {
 func (f *Firestore) SetAbout(about models.About) error {
 	updates := []firestore.Update{{Path: "bio", Value: about.Bio}}
 	if about.Image != nil {
-		err := f.CreateMedia(*about.Image)
-		if err != nil {
-			return err
-		}
 		updates = append(
 			updates,
 			firestore.Update{Path: "image", Value: about.Image},
