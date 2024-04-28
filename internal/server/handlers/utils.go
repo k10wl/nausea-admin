@@ -44,3 +44,33 @@ func processFile(
 		},
 	}
 }
+
+func filesIntoBucket(
+	files []*multipart.FileHeader,
+	uploader func(io.Reader, string) (string, error),
+) ([]urlWithMediaSize, []error) {
+	urls := []urlWithMediaSize{}
+	errs := []error{}
+	errChan := make(chan error)
+	urlChan := make(chan urlWithMediaSize)
+	for _, fileHeader := range files {
+		go processFile(
+			fileHeader,
+			uploader,
+			errChan,
+			urlChan,
+		)
+	}
+	for {
+		select {
+		case err := <-errChan:
+			errs = append(errs, err)
+		case url := <-urlChan:
+			urls = append(urls, url)
+		}
+		if len(urls)+len(errs) == len(files) {
+			break
+		}
+	}
+	return urls, errs
+}

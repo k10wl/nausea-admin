@@ -2,6 +2,7 @@ package firestore
 
 import (
 	"context"
+	"errors"
 	"slices"
 
 	"nausea-admin/internal/models"
@@ -39,6 +40,9 @@ func (f *Firestore) CreateFolder(
 		if err != nil {
 			return err
 		}
+		if parentFolder.ProhibitNested {
+			return errors.New("cannot nest folders")
+		}
 		err = tx.Create(folderDoc, folder)
 		if err != nil {
 			return err
@@ -66,6 +70,9 @@ func (f *Firestore) MarkFolderDeletedByID(id string) (models.Folder, error) {
 		err = toDeleteSnapshot.DataTo(&toDeleteFolder)
 		if err != nil {
 			return err
+		}
+		if toDeleteFolder.Protected {
+			return errors.New("cannot delete protected folder")
 		}
 		parentDoc := f.collectionFolders().Doc(toDeleteFolder.ParentID)
 		parentSnapshot, err := tx.Get(parentDoc)
@@ -207,6 +214,9 @@ func (f *Firestore) UploadMediaToFolder(media []models.MediaContent, folderId st
 	folderRef := f.collectionFolders().Doc(folderId)
 	doc, _ := folderRef.Get(context.TODO())
 	doc.DataTo(&folder)
+	if folder.ProhibitMedia {
+		return errors.New("cannot upload media to this folder")
+	}
 	_, err := folderRef.Update(context.TODO(), []firestore.Update{
 		{Path: "media", Value: append(folder.MediaContents, media...)},
 	})
@@ -253,6 +263,9 @@ func (f *Firestore) UpdateMediaInFolder(patch models.MediaContent) (models.Media
 	err = folderSnapshot.DataTo(&folder)
 	if err != nil {
 		return models.MediaContent{}, err
+	}
+	if folder.ProhibitMedia {
+		return models.MediaContent{}, errors.New("cannot upload media to this folder")
 	}
 	var media models.MediaContent
 	for i, v := range folder.MediaContents {

@@ -15,6 +15,9 @@ type Folder struct {
 	Name           string          `firestore:"name"`
 	FolderContents []FolderContent `firestore:"folders"`
 	MediaContents  []MediaContent  `firestore:"media"`
+	Protected      bool            `firestore:"protected"`
+	ProhibitNested bool            `firestore:"prohibitNested"`
+	ProhibitMedia  bool            `firestore:"prohibitMedia"`
 }
 
 type ContentBase struct {
@@ -44,6 +47,7 @@ func NewFolder(parentID string, name string) (*Folder, error) {
 		FolderContents: []FolderContent{},
 		MediaContents:  []MediaContent{},
 		Timestamps:     NewTimestamps(),
+		Protected:      false,
 	}
 	err := f.generateID()
 	return f, err

@@ -3,20 +3,24 @@ package utils
 import (
 	"log"
 	"net/http"
+	"slices"
 	"strings"
 
 	"nausea-admin/internal/server/template"
 )
 
-var links = []struct {
+type link struct {
 	URL  string
 	Name string
-}{
+}
+
+var links = []link{
 	{URL: "/", Name: "Home"},
 	{URL: "/meta/", Name: "Meta"},
 	{URL: "/about/", Name: "About"},
 	{URL: "/contacts/", Name: "Contacts"},
 	{URL: "/folders/", Name: "Folders"},
+	{URL: "/folders/--CAROUSEL--", Name: "Carousel"},
 }
 
 func ErrorResponse(w http.ResponseWriter, r *http.Request, code int, e error) {
@@ -46,7 +50,10 @@ func WithPageData(
 	for i, v := range links {
 		asideLinks[i] = template.AsideLink{Name: v.Name, URL: v.URL}
 		if (len(v.URL) > 1 &&
-			strings.HasPrefix(r.URL.Path, v.URL)) ||
+			strings.HasPrefix(r.URL.Path, v.URL) &&
+			slices.IndexFunc(links, func(e link) bool {
+				return e.URL == r.URL.Path
+			}) == -1) ||
 			v.URL == r.URL.Path {
 			asideLinks[i].Active = true
 			if !titleExists {

@@ -3,13 +3,14 @@
 <div hx-ext="response-targets">
   <div class="sticky top-0 flex items-center gap border-b py-md bg-white">
     <h2 class="mr-md">{{.Props.Folder.Name}}</h2>
-    <button id="new-folder-trigger">New folder</button>
-    <button id="upload-trigger">Upload</button>
+    <button {{if .Props.Folder.ProhibitNested}}hidden disabled{{end}} id="new-folder-trigger">New folder</button>
+    <button {{if .Props.Folder.ProhibitMedia}}hidden disabled{{end}} id="upload-trigger">Upload</button>
     <show-deleted-checkbox></show-deleted-checkbox>
   </div>
   {{if .Props.Error}}
   <p class="text-red py-md">{{.Props.Error}}</p>
   {{end}}
+  {{if ne .Props.Folder.ID.ID .Props.Folder.ParentID}}
       <div class="border-b border-gray p-xs grid gap">
         <a
           class="text-one-line flex items-center folder"
@@ -17,6 +18,7 @@
           >../</a
         >
       </div>
+          {{end}}
   <menu id="folder-contents">
     {{range .Props.Folder.FolderContents}}{{template "folder-list" .}}{{end}}
     <span id="folders-tail"></span>

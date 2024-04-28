@@ -2,14 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	"io"
-	"mime/multipart"
 	"net/http"
 
 	"nausea-admin/internal/db"
 	"nausea-admin/internal/models"
 	"nausea-admin/internal/server/logger"
 	"nausea-admin/internal/server/template"
+	"nausea-admin/internal/server/utils"
 	"nausea-admin/internal/storage"
 )
 
@@ -82,41 +81,13 @@ func (mh MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	err = mh.DB.UploadMediaToFolder(asContent, folderId)
 	if err != nil {
-		mh.Logger.Logln(fmt.Sprintf("failed to put into DB %+v", err))
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusInternalServerError, err)
+		return
 	}
 	mh.Template.ExecuteTemplate(w, "media-list-range",
 		map[string]interface{}{
 			"MediaContents": asContent,
 		},
 	)
-}
-
-func filesIntoBucket(
-	files []*multipart.FileHeader,
-	uploader func(io.Reader, string) (string, error),
-) ([]urlWithMediaSize, []error) {
-	urls := []urlWithMediaSize{}
-	errs := []error{}
-	errChan := make(chan error)
-	urlChan := make(chan urlWithMediaSize)
-	for _, fileHeader := range files {
-		go processFile(
-			fileHeader,
-			uploader,
-			errChan,
-			urlChan,
-		)
-	}
-	for {
-		select {
-		case err := <-errChan:
-			errs = append(errs, err)
-		case url := <-urlChan:
-			urls = append(urls, url)
-		}
-		if len(urls)+len(errs) == len(files) {
-			break
-		}
-	}
-	return urls, errs
 }
