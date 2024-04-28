@@ -15,6 +15,7 @@ var links = []struct {
 	{URL: "/", Name: "Home"},
 	{URL: "/meta/", Name: "Meta"},
 	{URL: "/about/", Name: "About"},
+	{URL: "/contacts/", Name: "Contacts"},
 	{URL: "/folders/", Name: "Folders"},
 }
 

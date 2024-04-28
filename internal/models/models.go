@@ -12,16 +12,8 @@ type ID struct {
 	ID string `firestore:"id"`
 }
 
-type Link struct {
-	ID
-	URL  string `firestore:"url"`
-	Text string `firestore:"text"`
-	Timestamps
-}
-
 type Contacts struct {
-	Email string `firestore:"email"`
-	Links []Link `firestore:"links"`
+	Links string `firestore:"links"`
 	Timestamps
 }
 

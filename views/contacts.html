@@ -1,0 +1,24 @@
+{{define "/contacts"}}{{template "_head" .}}
+<div hx-ext="response-targets">
+  <h1>Contacts</h1>
+  <form
+    hx-put="/contacts/"
+    hx-target-error="#contacts-text-error"
+    hx-swap="none"
+    class="grid"
+  >
+    <div
+      class="text-red empty-hidden"
+      id="contacts-text-error"
+      class="text-red"
+    ></div>
+    <label>
+      <p>Links</p>
+      <textarea is="custom-auto-resize" style="width: 100%" name="links">{{.Props.Contacts.Links}}</textarea>
+    </label>
+    <span>
+      <button class="block mt-sm ml-auto" type="submit">Save</button>
+    </span>
+  </form>
+</div>
+{{template "_tail"}}{{end}}

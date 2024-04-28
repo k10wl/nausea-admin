@@ -17,6 +17,8 @@ type IDB interface {
 	SetAbout(about models.About) error
 	GetMeta() (models.Meta, error)
 	SetMeta(models.Meta) error
+	GetContacts() (models.Contacts, error)
+	SetContacts(models.Contacts) error
 }
 
 type DB struct {
@@ -83,4 +85,12 @@ func (db DB) GetMeta() (models.Meta, error) {
 
 func (db DB) SetMeta(meta models.Meta) error {
 	return db.client.SetMeta(meta)
+}
+
+func (db DB) GetContacts() (models.Contacts, error) {
+	return db.client.GetContacts()
+}
+
+func (db DB) SetContacts(contacts models.Contacts) error {
+	return db.client.SetContacts(contacts)
 }

@@ -55,8 +55,12 @@ func (s *Server) Run() error {
 	mux.HandleFunc("POST /media", mh.UploadMedia)
 
 	metah := handlers.NewMetaHandler(*s.db, s.storage, t)
-	mux.HandleFunc("GET /meta/", metah.GetPage)
+	mux.HandleFunc("/meta/", metah.GetPage)
 	mux.HandleFunc("PUT /meta/", metah.PutMeta)
+
+	ch := handlers.NewContactsHandler(*s.db, t)
+	mux.HandleFunc("/contacts/", ch.GetContactsPage)
+	mux.HandleFunc("PUT /contacts/", ch.PutContacts)
 
 	return http.ListenAndServe(s.addr, loggerMux)
 }

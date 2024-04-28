@@ -72,6 +72,7 @@ func (h *MetaHandler) PutMeta(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	meta := models.Meta{Background: media}
+	meta.Update()
 	h.DB.SetMeta(meta)
 	w.WriteHeader(http.StatusOK)
 	h.Template.ExecuteTemplate(w, "prev-meta-image-url", map[string]interface{}{
