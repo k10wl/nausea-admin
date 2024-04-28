@@ -42,6 +42,7 @@ func (fh FoldersHandler) GetFoldersPage(w http.ResponseWriter, r *http.Request) 
 		map[string]interface{}{
 			"Folder": folder,
 			"Error":  err,
+			"Title":  folder.Name,
 		},
 	)
 	fh.Template.ExecuteTemplate(w, "/folders", data)

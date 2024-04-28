@@ -19,7 +19,14 @@ var links = []struct {
 }
 
 func ErrorResponse(w http.ResponseWriter, r *http.Request, code int, e error) {
-	log.Printf("Error in request: %s %s --- %d: %s --- Error: %s", r.Method, r.URL.Path, code, http.StatusText(code), e)
+	log.Printf(
+		"Error in request: %s %s --- %d: %s --- Error: %s",
+		r.Method,
+		r.URL.Path,
+		code,
+		http.StatusText(code),
+		e,
+	)
 	msg := e.Error()
 	if msg == "" {
 		msg = http.StatusText(code)
@@ -34,13 +41,21 @@ func WithPageData(
 	props map[string]interface{},
 ) (http.ResponseWriter, string, template.PageData) {
 	asideLinks := make([]template.AsideLink, len(links))
-	var title string
+	title, titleExists := props["Title"].(string)
 	for i, v := range links {
 		asideLinks[i] = template.AsideLink{Name: v.Name, URL: v.URL}
-		if (len(v.URL) > 1 && strings.HasPrefix(r.URL.Path, v.URL)) || v.URL == r.URL.Path {
+		if (len(v.URL) > 1 &&
+			strings.HasPrefix(r.URL.Path, v.URL)) ||
+			v.URL == r.URL.Path {
 			asideLinks[i].Active = true
-			title = v.Name
+			if !titleExists {
+				title = v.Name
+			}
 		}
 	}
-	return w, r.URL.Path, template.PageData{Props: props, AsideLinks: asideLinks, Title: title}
+	return w, r.URL.Path, template.PageData{
+		Props:      props,
+		AsideLinks: asideLinks,
+		Title:      title,
+	}
 }
