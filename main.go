@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"os"
 
@@ -19,12 +18,10 @@ func main() {
 	f := firestore.NewFirestoreClient(projectID)
 	db := db.NewDB(f)
 
-	t := template.Must(template.ParseGlob("views/**"))
-
 	c := cloudflare.NewClient()
 	storage := storage.NewStorage(c)
 
-	s := server.NewServer(":"+port, db, t, storage)
+	s := server.NewServer(":"+port, db, storage)
 	if err := s.Run(); err != nil {
 		log.Fatalf("FATAL SERVER ERROR: %v\n", err)
 	}

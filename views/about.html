@@ -1,9 +1,55 @@
-{{define "/"}}
-{{template "head" .}}
+{{define "/about"}}{{template "_head" .}}
+<div hx-ext="response-targets">
+  <h1>About</h1>
+  <form
+    hx-encoding="multipart/form-data"
+    hx-patch="/about/"
+    hx-swap="outerHTML"
+    hx-target="input[name='prev-image-url']"
+    hx-target-error="#about-text-error"
+    hx-on::after-request="resetFileInput('#about-input')"
+    class="grid"
+  >
+    <div class="text-red empty-hidden" id="about-text-error"></div>
+    <div id="content" class="flex gap flex-wrap">
+      <div>
+        <label class="cursor-pointer">
+          Select about image
+          <input
+            type="file"
+            accept="image/*"
+            onchange="onImageChange(event, '#about-image')"
+            hidden
+            name="image"
+            id="about-input"
+          />
+        </label>
+        {{template "prev-about-image-url" .}}
+        <img
+          src="{{.Props.About.Image.URL}}"
+          id="about-image"
+          class="cursor-pointer"
+          onclick="dublicateClick('#about-input')"
+        />
+      </div>
+      <label>
+        <p>Bio</p>
+        <textarea is="custom-auto-resize" style="width: 100%" name="bio">{{.Props.About.Bio}}</textarea
+      >
+    </label>
+  </div>
+  <span>
+    <button class="block mt-sm ml-auto" type="submit">Save</button>
+  </span>
+</form>
+</div>
+<style>
+#content > * {
+  flex: 1 1 300px;
+}
+</style>
+{{template "_tail"}}{{end}}
 
-{{range .Lazy}}
-  {{template "lazy wrapper" .}}
-{{end}}
-
-{{template "tail"}}
+{{define "prev-about-image-url"}}
+<input name="prev-image-url" hidden value="{{.Props.About.Image.URL}}" />
 {{end}}

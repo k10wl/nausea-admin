@@ -1,0 +1,173 @@
+@import "reset.css";
+
+:root {
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.25rem;
+  --space-xl: 1.5rem;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.center {
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+}
+
+.sticky {
+  position: sticky;
+}
+
+.top-0 {
+  top: 0;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.block {
+  display: block;;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.basis-full {
+  flex-basis: 100%;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.gap {
+  gap: var(--space-md);
+}
+
+.mx-sm {
+  margin-left: var(--space-sm);
+  margin-right: var(--space-sm);
+}
+
+.mt-sm {
+  margin-top: var(--space-sm);
+}
+
+.my-sm {
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.my-md {
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.mr-md {
+  margin-right: var(--space-md);
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.p-xs {
+  padding: var(--space-xs);
+}
+
+.py-md {
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+
+.p-md {
+  padding: var(--space-md);
+}
+
+.border {
+  border: 1px solid black;
+}
+
+.border-b {
+  border-bottom: 1px solid;
+}
+
+.border-r {
+  border-right: 1px solid;
+}
+
+.border-gray {
+  border-color: gray;
+}
+
+.border-black {
+  border-color: black;
+}
+
+.bg-white {
+  background-color: white;
+}
+
+.text-gray {
+  color: gray;
+}
+
+.text-red {
+  color: red;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.empty-hidden:empty {
+  display: none;
+}
+
+.text-one-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+form.htmx-request
+  button[type="submit"]:before {
+  content: "⏳ ";
+  display: inline;
+}

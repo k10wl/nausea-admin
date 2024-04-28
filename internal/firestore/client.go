@@ -38,6 +38,18 @@ func (f *Firestore) docContacts() *firestore.DocumentRef {
 	return f.client.Doc("data/contacts")
 }
 
+func (f *Firestore) docMeta() *firestore.DocumentRef {
+	return f.client.Doc("data/meta")
+}
+
 func (f *Firestore) colLinks() *firestore.CollectionRef {
 	return f.client.Collection("links")
+}
+
+func (f *Firestore) collectionFolders() *firestore.CollectionRef {
+	return f.client.Collection("folders")
+}
+
+func (f *Firestore) collectionMedia() *firestore.CollectionRef {
+	return f.client.Collection("media")
 }

@@ -3,30 +3,23 @@ package models
 import "time"
 
 type Timestamps struct {
-	CreatedAt time.Time  `firestore:"createdAt" json:"createdAt"`
-	UpdatedAt time.Time  `firestore:"updatedAt" json:"updatedAt"`
-	DeletedAt *time.Time `firestore:"deletedAt" json:"deletedAt"`
+	CreatedAt time.Time  `firestore:"createdAt"`
+	UpdatedAt time.Time  `firestore:"updatedAt"`
+	DeletedAt *time.Time `firestore:"deletedAt"`
 }
 
 type ID struct {
-	ID string
-}
-
-type Link struct {
-	ID
-	URL  string `firestore:"url" json:"url"`
-	Text string `firestore:"text" json:"text"`
-	Timestamps
+	ID string `firestore:"id"`
 }
 
 type Contacts struct {
-	Email string `firestore:"email" json:"email"`
-	Links []Link `firestore:"links" json:"links"`
+	Links string `firestore:"links"`
 	Timestamps
 }
 
 type About struct {
-	Bio string `firestore:"bio"`
+	Bio   string `firestore:"bio,omitempty"`
+	Image *Media `firestore:"image,omitempty"`
 	Timestamps
 }
 
@@ -45,4 +38,8 @@ func (t *Timestamps) Update() {
 func (t *Timestamps) Delete() {
 	now := time.Now()
 	t.DeletedAt = &now
+}
+
+func (t *Timestamps) Restore() {
+	t.DeletedAt = nil
 }

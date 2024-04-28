@@ -1,8 +1,10 @@
-FROM golang:1.21.4-bookworm
+FROM golang:1.22.0-bookworm
 
 WORKDIR /app
 
-
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get install -y ffmpeg
 RUN go install github.com/cosmtrek/air@latest
 
 RUN rm -rf /tmp

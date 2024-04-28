@@ -5,47 +5,49 @@ import (
 )
 
 const (
-	FolderContentType string = "folder"
-	ImageContentType  string = "image"
+	RootFolderID string = "--ROOT--"
 )
-
-type Content interface {
-	GetType() string
-}
 
 type Folder struct {
 	ID
 	Timestamps
-	ParentID string    `firestore:"parentID" json:"parentID"`
-	Name     string    `firestore:"name" json:"name"`
-	Contents []Content `firestore:"contents" json:"contents"`
+	ParentID       string          `firestore:"parentID"`
+	Name           string          `firestore:"name"`
+	FolderContents []FolderContent `firestore:"folders"`
+	MediaContents  []MediaContent  `firestore:"media"`
+	Protected      bool            `firestore:"protected"`
+	ProhibitNested bool            `firestore:"prohibitNested"`
+	ProhibitMedia  bool            `firestore:"prohibitMedia"`
 }
 
 type ContentBase struct {
 	ID
 	Timestamps
-	Type  string `firestore:"type" json:"type"`
-	RefID string `firestore:"refID" json:"refID"`
+	RefID string `firestore:"refID"`
 }
 
 type FolderContent struct {
 	ContentBase
-	Name string `firestore:"name" json:"name"`
+	Name string `firestore:"name"`
 }
 
-type ImageContent struct {
+type MediaContent struct {
 	ContentBase
-	URL         string `firestore:"url" json:"url"`
-	Name        string `firestore:"name" json:"name"`
-	Description string `firestore:"description" json:"description"`
+	MediaSize
+	URL         string `firestore:"URL"`
+	Name        string `firestore:"name"`
+	ParentID    string `firestore:"parentID"`
+	Description string `firestore:"description"`
 }
 
-func NewFolder(name string, parentID string) (*Folder, error) {
-	ic, _ := NewImageContent("", "", "", "")
+func NewFolder(parentID string, name string) (*Folder, error) {
 	f := &Folder{
-		Name:     name,
-		ParentID: parentID,
-		Contents: []Content{ic},
+		Name:           name,
+		ParentID:       parentID,
+		FolderContents: []FolderContent{},
+		MediaContents:  []MediaContent{},
+		Timestamps:     NewTimestamps(),
+		Protected:      false,
 	}
 	err := f.generateID()
 	return f, err
@@ -56,27 +58,11 @@ func NewFolderContent(refID string, name string) (*FolderContent, error) {
 		Name: name,
 		ContentBase: ContentBase{
 			RefID:      refID,
-			Type:       FolderContentType,
 			Timestamps: NewTimestamps(),
 		},
 	}
 	err := fc.generateID()
 	return &fc, err
-}
-
-func NewImageContent(refID string, URL string, name string, description string) (*ImageContent, error) {
-	ic := ImageContent{
-		Name:        name,
-		URL:         URL,
-		Description: description,
-		ContentBase: ContentBase{
-			RefID:      refID,
-			Type:       ImageContentType,
-			Timestamps: NewTimestamps(),
-		},
-	}
-	err := ic.generateID()
-	return &ic, err
 }
 
 func (id *ID) generateID() error {
@@ -88,36 +74,43 @@ func (id *ID) generateID() error {
 	return nil
 }
 
-func (ic ImageContent) GetType() string {
-	return ImageContentType
+func (f Folder) AsContent() (FolderContent, error) {
+	folderContent := FolderContent{
+		ContentBase: ContentBase{
+			Timestamps: f.Timestamps,
+			RefID:      f.ID.ID,
+		},
+		Name: f.Name,
+	}
+	err := folderContent.generateID()
+	return folderContent, err
 }
 
-func (fc FolderContent) GetType() string {
-	return FolderContentType
-}
-
-func (f Folder) GetFolderContents() []FolderContent {
-	fc := []FolderContent{}
-	for _, content := range f.Contents {
-		switch content.(type) {
-		case FolderContent:
-			fc = append(fc, content.(FolderContent))
-		default:
-			continue
+func (f *Folder) MarkDeletedFolderContents(id string) {
+	for i, v := range f.FolderContents {
+		if v.RefID == id {
+			v.Delete()
+			v.UpdatedAt = *v.DeletedAt
+			f.FolderContents[i] = v
 		}
 	}
-	return fc
 }
 
-func (f Folder) GetImageContents() []ImageContent {
-	ic := []ImageContent{}
-	for _, content := range f.Contents {
-		switch content.(type) {
-		case ImageContent:
-			ic = append(ic, content.(ImageContent))
-		default:
-			continue
+func (f *Folder) MarkRestoredFolderContents(id string) {
+	for i, v := range f.FolderContents {
+		if v.RefID == id {
+			v.Restore()
+			v.Update()
+			f.FolderContents[i] = v
 		}
 	}
-	return ic
+}
+
+func (f *Folder) Override(override Folder) {
+	f.Name = override.Name
+}
+
+func (m *MediaContent) Override(override MediaContent) {
+	m.Name = override.Name
+	m.Description = override.Description
 }

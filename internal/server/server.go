@@ -1,63 +1,76 @@
 package server
 
 import (
-	"html/template"
-	"log"
 	"net/http"
 
 	"nausea-admin/internal/db"
+	"nausea-admin/internal/server/handlers"
+	"nausea-admin/internal/server/logger"
+	"nausea-admin/internal/server/template"
 	"nausea-admin/internal/storage"
-
-	"github.com/gorilla/mux"
 )
 
 type Server struct {
 	addr    string
 	db      *db.DB
-	t       *template.Template
 	storage *storage.Storage
 }
 
-func NewServer(addr string, db *db.DB, t *template.Template, storage *storage.Storage) *Server {
+func NewServer(addr string, db *db.DB, storage *storage.Storage) *Server {
 	return &Server{
 		addr:    addr,
 		db:      db,
-		t:       t,
 		storage: storage,
 	}
 }
 
 func (s *Server) Run() error {
-	r := mux.NewRouter()
+	mux := http.NewServeMux()
+	l := logger.NewServerLogger()
+	defer l.CloseLogger()
+	loggerMux := l.HTTPLogger(mux)
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
-	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-	r.Use(logger)
+	t := template.NewTemplate(l)
 
-	r.HandleFunc("/", handleAboutPage(s)).Methods(http.MethodGet)
-	r.HandleFunc("/lazy", handleAboutBio(s)).Methods(http.MethodGet)
-	r.HandleFunc("/", handleAboutPatch(s)).Methods(http.MethodPatch)
+	hh := handlers.NewHomeHandler(t)
+	mux.HandleFunc("/", hh.GetHomePage)
 
-	r.HandleFunc("/contacts", handleContactsPage(s)).Methods(http.MethodGet)
-	r.HandleFunc("/contacts/lazy", handleContactsLazy(s)).Methods(http.MethodGet)
-	r.HandleFunc("/contacts/email", handleEmailPatch(s)).Methods(http.MethodPatch)
-	r.HandleFunc("/contacts/links", handleLinkPost(s)).Methods(http.MethodPost)
-	r.HandleFunc("/contacts/links/{id}", handleLinkPatch(s)).Methods(http.MethodPatch)
-	r.HandleFunc("/contacts/links/{id}", handleLinkDelete(s)).Methods(http.MethodDelete)
+	ah := handlers.NewAboutHandler(s.db, t, s.storage)
+	mux.HandleFunc("/about/", ah.GetAboutPage)
+	mux.HandleFunc("PATCH /about/", ah.PatchAbout)
 
-	r.HandleFunc("/gallery", handleGalleryPage(s)).Methods(http.MethodGet)
-	// TODO rework this handler, bad url
-	r.HandleFunc("/gallery", handleGalleryUpload(s)).Methods(http.MethodPost)
+	fh := handlers.NewFoldersHandler(*s.db, t)
+	mux.HandleFunc("/folders/", fh.GetFoldersPage)
+	mux.HandleFunc("/folders/{id}", fh.GetFoldersPage)
+	mux.HandleFunc("POST /folders/{id}", fh.CreateFolder)
+	mux.HandleFunc("PATCH /folders/{id}", fh.PatchFolder)
+	mux.HandleFunc("PATCH /folders/{id}/hide", fh.MarkFolderAsDeleted)
+	mux.HandleFunc("PATCH /folders/{id}/restore", fh.RestoreFolder)
+	mux.HandleFunc("PATCH /folders/{id}/{media_id}", fh.EditFolderMedia)
+	mux.HandleFunc("PATCH /folders/{id}/{media_id}/hide", fh.MarkMediaAsDeletedInFolder)
+	mux.HandleFunc("PATCH /folders/{id}/{media_id}/restore", fh.RestoreMediaInFolder)
 
-	http.Handle("/", r)
-	log.Printf("Listening and serving on %s\n", s.addr)
+	mh := handlers.NewMediaHandler(*s.db, t, s.storage, l)
+	mux.HandleFunc("POST /media", mh.UploadMedia)
 
-	return http.ListenAndServe(s.addr, nil)
+	metah := handlers.NewMetaHandler(*s.db, s.storage, t)
+	mux.HandleFunc("/meta/", metah.GetPage)
+	mux.HandleFunc("PUT /meta/", metah.PutMeta)
+
+	ch := handlers.NewContactsHandler(*s.db, t)
+	mux.HandleFunc("/contacts/", ch.GetContactsPage)
+	mux.HandleFunc("PUT /contacts/", ch.PutContacts)
+
+	return http.ListenAndServe(s.addr, loggerMux)
 }
 
-func (s *Server) executeTemplate(w http.ResponseWriter, tmpl string, data any) {
-	err := s.t.ExecuteTemplate(w, tmpl, data)
-	if err != nil {
-		log.Println("Error executing template:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-}
+/*
+TODO:
+- add upload feature
+- create custom modal element because new folder and upload are basically the same
+- create service folders that will have unused images
+- add about editing
+- replace delete with hide, and add real delete button
+- global search by name
+*/

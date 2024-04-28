@@ -1,45 +1,24 @@
-{{define "/contacts"}}
-{{template "head" .}}
-
-{{range .Lazy}}
-  {{template "lazy wrapper" .}}
-{{end}}
-
-{{template "tail"}}
-{{end}}
-
-
-{{define "contacts lazy"}}
-{{range .Forms}}
-  {{template "form" .}}
-{{end}}
-{{range .Links}}
-  {{template "contacts link" .}}
-{{end}}
-{{template "contacts link"}}
-{{end}}
-
-
-{{define "contacts link"}}
-<form 
-  class="border border-sm p-md" 
-  {{if .ID}}hx-patch="/contacts/links/{{.ID}}"{{else}}hx-post="/contacts/links"{{end}}
-  hx-swap="{{if .ID}}outerHTML{{else}}beforebegin{{end}}"
-  hx-on::after-request="this.reset()"
+{{define "/contacts"}}{{template "_head" .}}
+<div hx-ext="response-targets">
+  <h1>Contacts</h1>
+  <form
+    hx-put="/contacts/"
+    hx-target-error="#contacts-text-error"
+    hx-swap="none"
+    class="grid"
   >
-  <div>
+    <div
+      class="text-red empty-hidden"
+      id="contacts-text-error"
+      class="text-red"
+    ></div>
     <label>
-      Text
-      <input name="Text" value="{{.Text}}">
+      <p>Links</p>
+      <textarea is="custom-auto-resize" style="width: 100%" name="links">{{.Props.Contacts.Links}}</textarea>
     </label>
-  </div>
-  <div>
-    <label>
-      URL
-      <input name="URL" value="{{.URL}}">
-    </label>
-  </div>
-  <button>{{if .ID}}Update{{else}}Create{{end}}</button>
-  {{if .ID}}<button hx-delete="/contacts/links/{{.ID}}" hx-swap="delete" hx-target="closest form">Delete</button>{{end}}
-</form>
-{{end}}
+    <span>
+      <button class="block mt-sm ml-auto" type="submit">Save</button>
+    </span>
+  </form>
+</div>
+{{template "_tail"}}{{end}}
