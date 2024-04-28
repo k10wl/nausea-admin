@@ -34,7 +34,7 @@ func NewMediaHandler(
 }
 
 func (mh MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseMultipartForm(1 << 30) // memory limit of 1GB
+	err := parseMultipartForm(r)
 	urlValues := r.URL.Query()
 	folderId := urlValues.Get("folder-id")
 	if err != nil {

@@ -39,7 +39,7 @@ func (h AboutHandler) GetAboutPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h AboutHandler) PatchAbout(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseMultipartForm(1 << 30) // memory limit of 1GB
+	err := parseMultipartForm(r)
 	if err != nil {
 		w.Header().Set("HX-Reswap", "innerHTML")
 		utils.ErrorResponse(w, r, http.StatusInternalServerError, err)

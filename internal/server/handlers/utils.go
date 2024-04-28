@@ -3,12 +3,17 @@ package handlers
 import (
 	"io"
 	"mime/multipart"
+	"net/http"
 
 	"nausea-admin/internal/converter"
 	"nausea-admin/internal/models"
 
 	"golang.org/x/image/webp"
 )
+
+func parseMultipartForm(r *http.Request) error {
+	return r.ParseMultipartForm(1 << 30) // memory limit of 1GB
+}
 
 func processFile(
 	fileHeader *multipart.FileHeader,
