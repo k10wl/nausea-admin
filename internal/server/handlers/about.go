@@ -78,4 +78,9 @@ func (h AboutHandler) PatchAbout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	h.Template.ExecuteTemplate(w, "prev-about-image-url", map[string]interface{}{
+		"Props": map[string]interface{}{
+			"About": patch,
+		},
+	})
 }

@@ -4,7 +4,8 @@
   <form
     hx-encoding="multipart/form-data"
     hx-patch="/about/"
-    hx-swap="none"
+    hx-swap="outerHTML"
+    hx-target="input[name='prev-image-url']"
     hx-target-error="#about-text-error"
     hx-on::after-request="resetFileInput('#about-input')"
     class="grid"
@@ -23,7 +24,7 @@
             id="about-input"
           />
         </label>
-        <input name="prev-image-url" hidden value="{{.Props.About.Image.URL}}" />
+        {{template "prev-about-image-url" .}}
         <img
           src="{{.Props.About.Image.URL}}"
           id="about-image"
@@ -48,3 +49,7 @@
 }
 </style>
 {{template "_tail"}}{{end}}
+
+{{define "prev-about-image-url"}}
+<input name="prev-image-url" hidden value="{{.Props.About.Image.URL}}" />
+{{end}}

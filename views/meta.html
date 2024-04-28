@@ -4,7 +4,8 @@
   <form
     hx-encoding="multipart/form-data"
     hx-put="/meta/"
-    hx-swap="none"
+    hx-swap="outerHTML"
+    hx-target="input[name='prev-image-url']"
     hx-target-error="#meta-text-error"
     hx-on::after-request="resetFileInput('#meta-input')"
     class="grid"
@@ -22,7 +23,7 @@
           id="meta-input"
         />
       </label>
-      <input name="prev-image-url" hidden value="{{.Props.Meta.Background.URL}}" />
+      {{template "prev-meta-image-url" .}}
       <img
         src="{{.Props.Meta.Background.URL}}"
         id="background-image"
@@ -36,3 +37,9 @@
   </form>
 </div>
 {{template "_tail"}}{{end}}
+
+
+
+{{define "prev-meta-image-url"}}
+<input name="prev-image-url" hidden value="{{.Props.Meta.Background.URL}}" />
+{{end}}
