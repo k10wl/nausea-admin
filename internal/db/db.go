@@ -19,6 +19,7 @@ type IDB interface {
 	SetMeta(models.Meta) error
 	GetContacts() (models.Contacts, error)
 	SetContacts(models.Contacts) error
+	PermanentlyDeleteMedia(folderID string, mediaID string) (models.MediaContent, error)
 }
 
 type DB struct {
@@ -53,6 +54,10 @@ func (db DB) UploadMediaToFolder(media []models.MediaContent, folderID string) e
 
 func (db DB) MarkMediaAsDeletedInFolder(mediaID string, folderID string) (models.MediaContent, error) {
 	return db.client.MarkMediaAsDeletedInFolder(mediaID, folderID)
+}
+
+func (db DB) PermanentlyDeleteMedia(folderID string, mediaID string) (models.MediaContent, error) {
+	return db.client.PermanentlyDeleteMedia(folderID, mediaID)
 }
 
 func (db DB) MarkMediaAsRestoredInFolder(mediaID string, folderID string) (models.MediaContent, error) {

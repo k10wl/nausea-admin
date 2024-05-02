@@ -163,7 +163,7 @@ document.querySelectorAll('button[class*="rename-"').forEach((button) => {
   });
 });
 
-class EditFolder {
+class SharedCustomDialog {
   /** @type {HTMLFormElement} */
   element;
 
@@ -172,13 +172,16 @@ class EditFolder {
     this.element = element;
   }
 
-  /** @param {{name: string, id: string, fromInside?: boolean}} data  */
   open(data) {
     this.updateForm(data);
     htmx.process(this.element);
     this.updateInputs(data);
   }
+  updateForm() {}
+  updateInputs() {}
+}
 
+class EditFolder extends SharedCustomDialog {
   /** @param {{name: string, id: string, fromInside?: boolean}} data  */
   updateForm(data) {
     const base = this.element.getAttribute("data-hx-base");
@@ -189,7 +192,6 @@ class EditFolder {
       path += "?from-inside";
       target = "#folder-name";
     }
-
     this.element.setAttribute("hx-patch", path);
     this.element.setAttribute("hx-target", target);
   }
@@ -226,7 +228,23 @@ class EditMedia extends EditFolder {
   }
 }
 
+class DeleteForever extends SharedCustomDialog {
+  /** @param {{mediaId: string, id: string, folderId: string}} data  */
+  updateForm(data) {
+    const base = this.element.getAttribute("data-hx-base");
+    this.element.querySelector("#delete-forever-error").innerHTML = "";
+    this.element.setAttribute(
+      "hx-delete",
+      `${base}${data.folderId}/${data.mediaId}`,
+    );
+    this.element.setAttribute("hx-target", "#content-" + data.id);
+  }
+}
+
 const editFolder = new EditFolder(
   document.getElementById("rename-folder-form"),
 );
 const editMedia = new EditMedia(document.getElementById("rename-media-form"));
+const deleteForever = new DeleteForever(
+  document.getElementById("delete-forever-form"),
+);

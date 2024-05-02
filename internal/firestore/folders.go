@@ -3,6 +3,7 @@ package firestore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"slices"
 
 	"nausea-admin/internal/models"
@@ -280,4 +281,34 @@ func (f *Firestore) UpdateMediaInFolder(patch models.MediaContent) (models.Media
 		{Path: "media", Value: folder.MediaContents},
 	})
 	return media, err
+}
+
+func (f *Firestore) PermanentlyDeleteMedia(folderID string, mediaID string) (models.MediaContent, error) {
+	var content models.MediaContent
+	err := f.client.RunTransaction(f.ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		var folder models.Folder
+		folderDoc := f.collectionFolders().Doc(folderID)
+		folderSnapshot, err := folderDoc.Get(ctx)
+		if err != nil {
+			return err
+		}
+		err = folderSnapshot.DataTo(&folder)
+		i := slices.IndexFunc(folder.MediaContents, func(media models.MediaContent) bool {
+			return media.ID.ID == mediaID
+		})
+		if i == -1 {
+			return errors.New("not found")
+		}
+		fmt.Printf("i: %v\n", i)
+		content = folder.MediaContents[i]
+		wihtoutMedia := slices.Delete(folder.MediaContents, i, i+1)
+		fmt.Printf("wihtoutMedia: %+v\n", wihtoutMedia)
+		err = tx.Update(folderDoc, []firestore.Update{{Path: "media", Value: wihtoutMedia}})
+		if err != nil {
+			return err
+		}
+		tx.Delete(f.collectionMedia().Doc(content.RefID))
+		return err
+	})
+	return content, err
 }

@@ -40,7 +40,7 @@ func (s *Server) Run() error {
 	mux.HandleFunc("/about/", ah.GetAboutPage)
 	mux.HandleFunc("PATCH /about/", ah.PatchAbout)
 
-	fh := handlers.NewFoldersHandler(*s.db, t)
+	fh := handlers.NewFoldersHandler(*s.db, t, *s.storage)
 	mux.HandleFunc("/folders/", fh.GetFoldersPage)
 	mux.HandleFunc("/folders/{id}", fh.GetFoldersPage)
 	mux.HandleFunc("POST /folders/{id}", fh.CreateFolder)
@@ -48,6 +48,7 @@ func (s *Server) Run() error {
 	mux.HandleFunc("PATCH /folders/{id}/hide", fh.MarkFolderAsDeleted)
 	mux.HandleFunc("PATCH /folders/{id}/restore", fh.RestoreFolder)
 	mux.HandleFunc("PATCH /folders/{id}/{media_id}", fh.EditFolderMedia)
+	mux.HandleFunc("DELETE /folders/{id}/{media_id}", fh.DeleteFolderMedia)
 	mux.HandleFunc("PATCH /folders/{id}/{media_id}/hide", fh.MarkMediaAsDeletedInFolder)
 	mux.HandleFunc("PATCH /folders/{id}/{media_id}/restore", fh.RestoreMediaInFolder)
 

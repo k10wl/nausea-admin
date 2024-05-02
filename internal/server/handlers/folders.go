@@ -9,17 +9,20 @@ import (
 	"nausea-admin/internal/models"
 	"nausea-admin/internal/server/template"
 	"nausea-admin/internal/server/utils"
+	"nausea-admin/internal/storage"
 )
 
 type FoldersHandler struct {
 	DB       db.DB
 	Template template.Template
+	Storage  storage.Storage
 }
 
-func NewFoldersHandler(db db.DB, template template.Template) FoldersHandler {
+func NewFoldersHandler(db db.DB, template template.Template, storage storage.Storage) FoldersHandler {
 	return FoldersHandler{
 		DB:       db,
 		Template: template,
+		Storage:  storage,
 	}
 }
 
@@ -247,6 +250,29 @@ func (fh FoldersHandler) EditFolderMedia(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	fh.Template.ExecuteTemplate(w, "media-list", mediaContent)
+}
+
+func (fh FoldersHandler) DeleteFolderMedia(w http.ResponseWriter, r *http.Request) {
+	folderID := getFolderID(r)
+	mediaID := r.PathValue("media_id")
+	if folderID == "" {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("no folderID"))
+		return
+	}
+	content, err := fh.DB.PermanentlyDeleteMedia(folderID, mediaID)
+	if err != nil {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("failed to update media"))
+		return
+	}
+	err = fh.Storage.RemoveObject(fh.Storage.ParseURLKey(content.URL))
+	if err != nil {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("failed to remove image from cloud"))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func getFolderID(r *http.Request) string {

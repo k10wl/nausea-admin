@@ -80,6 +80,15 @@
   </form>
 </custom-dialog>
 
+<custom-dialog trigger=".delete-forever">
+  <form id="delete-forever-form" data-hx-base="/folders/" hx-delete="" hx-swap="delete" class="grid gap"
+    hx-target-error="#delete-forever-error">
+    <p>Delete forever? This action cannot be undone.</p>
+    <button type="submit">Yes, delete forever</button>
+    <div class="text-red empty-hidden" id="delete-forever-error"></div>
+  </form>
+</custom-dialog>
+
 <script async src="/assets/scripts/folders.js"></script>
 <link rel="stylesheet" type="text/css" href="/assets/styles/folders.css">
 {{template "_tail"}}
@@ -106,6 +115,7 @@
 
 {{define "list-item-show"}}show{{end}}
 {{define "list-item-hide"}}hide{{end}}
+{{define "list-item-delete"}}delete{{end}}
 {{define "list-item-edit"}}edit{{end}}
 
 {{define "folder-list"}}
@@ -167,6 +177,13 @@
     {{template "list-item-hide"}}
   </button>
   {{end}}
+  <button class="delete-forever" onclick="deleteForever.open({
+      folderId: '{{.ParentID}}',
+      id: '{{.ContentBase.RefID}}',
+      mediaId: '{{.ContentBase.ID.ID}}',
+      })" hx-target-error="next div" title="delete">
+    {{template "list-item-delete"}}
+  </button>
 </div>
 {{template "content-deletable-tail" .}}
 {{end}}
