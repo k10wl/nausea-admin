@@ -2,23 +2,23 @@
 {{template "_head" .}}
 <div hx-ext="response-targets">
   <div class="sticky top-0 flex items-center gap border-b py-md bg-white">
-    <h2 class="mr-md">{{.Props.Folder.Name}}</h2>
+    <h2 id="folder-name" class="mr-md">{{.Props.Folder.Name}}</h2>
     <button {{if .Props.Folder.ProhibitNested}}hidden disabled{{end}} id="new-folder-trigger">New folder</button>
     <button {{if .Props.Folder.ProhibitMedia}}hidden disabled{{end}} id="upload-trigger">Upload</button>
+    <button {{if or .Props.Folder.ProhibitMedia .Props.Folder.ProhibitNested}}hidden disabled{{end}}
+      class="rename-folder"
+      onclick="editFolder.open({name: '{{.Props.Folder.Name}}', id: '{{.Props.Folder.ID.ID}}', fromInside: true})">
+      Rename</button>
     <show-deleted-checkbox></show-deleted-checkbox>
   </div>
   {{if .Props.Error}}
   <p class="text-red py-md">{{.Props.Error}}</p>
   {{end}}
   {{if ne .Props.Folder.ID.ID .Props.Folder.ParentID}}
-      <div class="border-b border-gray p-xs grid gap">
-        <a
-          class="text-one-line flex items-center folder"
-          href="/folders/{{.Props.Folder.ParentID}}"
-          >../</a
-        >
-      </div>
-          {{end}}
+  <div class="border-b border-gray p-xs grid gap">
+    <a class="text-one-line flex items-center folder" href="/folders/{{.Props.Folder.ParentID}}">../</a>
+  </div>
+  {{end}}
   <menu id="folder-contents">
     {{range .Props.Folder.FolderContents}}{{template "folder-list" .}}{{end}}
     <span id="folders-tail"></span>
@@ -27,18 +27,9 @@
   </menu>
 </div>
 
-<custom-dialog
-  trigger="#new-folder-trigger"
-  onclose="cleanupCreateFolder()"
->
-  <form
-    id="create-folder-form"
-    class="flex flex-col gap"
-    hx-post="/folders/{{.Props.Folder.ID.ID}}"
-    hx-swap="beforebegin"
-    hx-target="#folders-tail"
-    hx-target-error="#create-folder-error"
-  >
+<custom-dialog trigger="#new-folder-trigger" onclose="cleanupCreateFolder()">
+  <form id="create-folder-form" class="flex flex-col gap" hx-post="/folders/{{.Props.Folder.ID.ID}}"
+    hx-swap="beforebegin" hx-target="#folders-tail" hx-target-error="#create-folder-error">
     <p>Create new folder in "{{.Props.Folder.Name}}"</p>
     <input autofocus name="name" placeholder="Folder name...">
     <div class="text-red empty-hidden" id="create-folder-error"></div>
@@ -49,20 +40,10 @@
   </form>
 </custom-dialog>
 
-<custom-dialog
-  trigger="#upload-trigger"
-  onopen="openFileInput()"
-  onclose="cleanupUpload()"
-  >
-  <form 
-    id="upload-media-form"
-    class="block"
-    hx-post="/media?folder-id={{.Props.Folder.ID.ID}}"
-    hx-encoding= "multipart/form-data"
-    hx-swap="beforebegin"
-    hx-target="#media-tail"
-    hx-target-error="#upload-media-error"
-    >
+<custom-dialog trigger="#upload-trigger" onopen="openFileInput()" onclose="cleanupUpload()">
+  <form id="upload-media-form" class="block" hx-post="/media?folder-id={{.Props.Folder.ID.ID}}"
+    hx-encoding="multipart/form-data" hx-swap="beforebegin" hx-target="#media-tail"
+    hx-target-error="#upload-media-error">
     <div class="upload-controls">
       <input id="media-file-input" type="file" name="file" multiple accept="image/*">
       <button type="submit">Upload</button>
@@ -73,19 +54,13 @@
       <div class="upload-preview">
         <button type="button">x</button>
         <img src="" alt="">
-      <div>
+        <div>
     </template>
   </form>
 </custom-dialog>
 
 <custom-dialog trigger=".rename-folder">
-  <form
-    id="rename-folder-form"
-    data-hx-base="/folders/"
-    hx-patch="/folders/"
-    hx-swap="outerHTML"
-    class="grid gap"
-    >
+  <form id="rename-folder-form" data-hx-base="/folders/" hx-patch="/folders/" hx-swap="outerHTML" class="grid gap">
     <label class="grid">Name
       <textarea is="custom-auto-resize" name="name"></textarea>
     </label class="grid">
@@ -94,13 +69,7 @@
 </custom-dialog>
 
 <custom-dialog trigger=".rename-media">
-  <form
-    id="rename-media-form"
-    data-hx-base="/folders/"
-    hx-patch=""
-    hx-swap="outerHTML"
-    class="grid gap"
-    >
+  <form id="rename-media-form" data-hx-base="/folders/" hx-patch="" hx-swap="outerHTML" class="grid gap">
     <label class="grid">Name
       <textarea is="custom-auto-resize" name="name"></textarea>
     </label class="grid">
@@ -118,20 +87,17 @@
 
 
 {{define "media-list-range"}}
-  {{range .MediaContents}}{{template "media-list" .}}{{end}}
+{{range .MediaContents}}{{template "media-list" .}}{{end}}
 {{end}}
 
 
 {{define "content-deletable-head"}}
 <li id="content-{{.RefID}}" {{if .DeletedAt}}class="content-deleted" {{end}}>
-  <div
-    class="border-b border-gray p-xs grid gap"
-    style="grid-template-columns: 1fr auto"
-  >
-{{end}}
+  <div class="border-b border-gray p-xs grid gap" style="grid-template-columns: 1fr auto">
+    {{end}}
 
 
-{{define "content-deletable-tail"}}
+    {{define "content-deletable-tail"}}
   </div>
   <div class="text-red"></div>
 </li>
@@ -143,101 +109,64 @@
 {{define "list-item-edit"}}edit{{end}}
 
 {{define "folder-list"}}
-  {{template "content-deletable-head" .}}
-  <a
-    class="text-one-line flex items-center"
-    title="{{.Name}}"
-    href="{{.RefID}}"
-  >
+{{template "content-deletable-head" .}}
+<a class="text-one-line flex items-center" title="{{.Name}}" href="{{.RefID}}">
   <span class="folder text-one-line"><span>{{.Name}}</span></span>
-  </a>
-  <div class="flex gap items-center">
-  <button
-    class="rename-folder"
-    type="button"
-    title="edit"
-    onclick="editFolder.open({name: '{{.Name}}', id: '{{.ContentBase.RefID}}'})"
-  >
+</a>
+<div class="flex gap items-center">
+  <button class="rename-folder" type="button" title="edit"
+    onclick="editFolder.open({name: '{{.Name}}', id: '{{.ContentBase.RefID}}'})">
     {{template "list-item-edit"}}
   </button>
-    {{if .DeletedAt}}
-    <button
-      hx-patch="/folders/{{.ContentBase.RefID}}/restore"
-      hx-swap="outerHTML"
-      hx-target="closest li"
-      hx-target-error="next div"
-      title="show"
-    >
+  {{if .DeletedAt}}
+  <button hx-patch="/folders/{{.ContentBase.RefID}}/restore" hx-swap="outerHTML" hx-target="closest li"
+    hx-target-error="next div" title="show">
     {{template "list-item-show"}}
-    </button>
-    {{else}}
-    <button
-      hx-patch="/folders/{{.ContentBase.RefID}}/hide"
-      hx-swap="outerHTML"
-      hx-target="closest li"
-      hx-target-error="next div"
-      title="hide"
-    >
+  </button>
+  {{else}}
+  <button hx-patch="/folders/{{.ContentBase.RefID}}/hide" hx-swap="outerHTML" hx-target="closest li"
+    hx-target-error="next div" title="hide">
     {{template "list-item-hide"}}
-    </button>
-    {{end}}
-  </div>
-  {{template "content-deletable-tail" .}}
+  </button>
+  {{end}}
+</div>
+{{template "content-deletable-tail" .}}
 {{end}}
 
 
 {{define "media-list"}}
-  {{template "content-deletable-head" .}}
-  <span
-    class="text-one-line flex gap items-center"
-    title="{{.Name}}"
-    href="{{.RefID}}"
-  >
-    <span class="media--container">
-      <custom-scalable class="flex items-center">
+{{template "content-deletable-head" .}}
+<span class="text-one-line flex gap items-center" title="{{.Name}}" href="{{.RefID}}">
+  <span class="media--container">
+    <custom-scalable class="flex items-center">
       <img src="{{.URL}}" class="h-full media--image">
-      </custom-scalable>
-    </span>
-    <span class="text-one-line">
-      <span>{{.Name}}</span>{{if .Description}}<span class="text-gray"> | {{.Description}}</span>{{end}}
-    </span>
+    </custom-scalable>
   </span>
-  <div class="flex gap items-center">
-    <button
-      class="rename-media"
-      type="button"
-      title="edit"
-      onclick="editMedia.open({
+  <span class="text-one-line">
+    <span>{{.Name}}</span>{{if .Description}}<span class="text-gray"> | {{.Description}}</span>{{end}}
+  </span>
+</span>
+<div class="flex gap items-center">
+  <button class="rename-media" type="button" title="edit" onclick="editMedia.open({
       name: '{{.Name}}',
       description: '{{.Description}}',
       mediaId: '{{.ContentBase.ID.ID}}',
       id: '{{.ContentBase.RefID}}',
       folderId: '{{.ParentID}}',
-      })"
-    >
-      {{template "list-item-edit"}}
-    </button>
-        {{if .DeletedAt}}
-        <button
-          hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore"
-          hx-swap="outerHTML"
-          hx-target="closest li"
-          hx-target-error="next div"
-          title="hide"
-        >
-        {{template "list-item-show"}}
-        </button>
-        {{else}}
-        <button
-          hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/hide"
-          hx-swap="outerHTML"
-          hx-target="closest li"
-          hx-target-error="next div"
-          title="show"
-        >
-        {{template "list-item-hide"}}
-        </button>
-        {{end}}
-  </div>
-  {{template "content-deletable-tail" .}}
+      })">
+    {{template "list-item-edit"}}
+  </button>
+  {{if .DeletedAt}}
+  <button hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore" hx-swap="outerHTML" hx-target="closest li"
+    hx-target-error="next div" title="hide">
+    {{template "list-item-show"}}
+  </button>
+  {{else}}
+  <button hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/hide" hx-swap="outerHTML" hx-target="closest li"
+    hx-target-error="next div" title="show">
+    {{template "list-item-hide"}}
+  </button>
+  {{end}}
+</div>
+{{template "content-deletable-tail" .}}
 {{end}}

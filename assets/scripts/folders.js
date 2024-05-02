@@ -164,24 +164,34 @@ document.querySelectorAll('button[class*="rename-"').forEach((button) => {
 });
 
 class EditFolder {
+  /** @type {HTMLFormElement} */
   element;
 
+  /** @param {HTMLFormElement} element */
   constructor(element) {
     this.element = element;
   }
 
-  /** @param {{name: string, id: string}} data  */
+  /** @param {{name: string, id: string, fromInside?: boolean}} data  */
   open(data) {
     this.updateForm(data);
     htmx.process(this.element);
     this.updateInputs(data);
   }
 
-  /** @param {{name: string, id: string}} data  */
+  /** @param {{name: string, id: string, fromInside?: boolean}} data  */
   updateForm(data) {
     const base = this.element.getAttribute("data-hx-base");
-    this.element.setAttribute("hx-patch", base + data.id);
-    this.element.setAttribute("hx-target", "#content-" + data.id);
+    let path = base + data.id;
+    let target = "#content-" + data.id;
+    if (data.fromInside) {
+      this.element.setAttribute("hx-swap", "innerHTML");
+      path += "?from-inside";
+      target = "#folder-name";
+    }
+
+    this.element.setAttribute("hx-patch", path);
+    this.element.setAttribute("hx-target", target);
   }
 
   /** @param {{name: string, id: string}} data  */
@@ -189,7 +199,7 @@ class EditFolder {
     /** @type HTMLTextAreaElement */
     const nameEl = this.element.querySelector('textarea[name="name"]');
     nameEl.value = data.name;
-    nameEl.updateHeight()
+    nameEl.updateHeight();
   }
 }
 
@@ -198,9 +208,11 @@ class EditMedia extends EditFolder {
   updateInputs(data) {
     super.updateInputs(data);
     /** @type HTMLTextAreaElement */
-    const descriptionEl = this.element.querySelector('textarea[name="description"]');
+    const descriptionEl = this.element.querySelector(
+      'textarea[name="description"]',
+    );
     descriptionEl.value = data.description;
-    descriptionEl.updateHeight()
+    descriptionEl.updateHeight();
   }
 
   /** @param {{name: string, description: string, mediaId: string, id: string, folderId: string}} data  */

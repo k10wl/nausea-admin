@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"nausea-admin/internal/db"
@@ -214,6 +215,10 @@ func (fh FoldersHandler) PatchFolder(w http.ResponseWriter, r *http.Request) {
 			http.StatusBadRequest,
 			errors.New("cannot show update, please refresh"),
 		)
+		return
+	}
+	if r.URL.Query().Has("from-inside") {
+		fmt.Fprintf(w, fmt.Sprintf("%[1]s<script>document.title=%[1]q</script>", asContent.Name))
 		return
 	}
 	fh.Template.ExecuteTemplate(w, "folder-list", asContent)
