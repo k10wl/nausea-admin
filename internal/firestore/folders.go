@@ -3,7 +3,6 @@ package firestore
 import (
 	"context"
 	"errors"
-	"fmt"
 	"slices"
 
 	"nausea-admin/internal/models"
@@ -224,7 +223,10 @@ func (f *Firestore) UploadMediaToFolder(media []models.MediaContent, folderId st
 	return err
 }
 
-func (f *Firestore) MarkMediaAsDeletedInFolder(mediaID string, folderID string) (models.MediaContent, error) {
+func (f *Firestore) MarkMediaAsDeletedInFolder(
+	mediaID string,
+	folderID string,
+) (models.MediaContent, error) {
 	var folder models.Folder
 	folderRef := f.collectionFolders().Doc(folderID)
 	doc, _ := folderRef.Get(context.TODO())
@@ -239,7 +241,10 @@ func (f *Firestore) MarkMediaAsDeletedInFolder(mediaID string, folderID string) 
 	return folder.MediaContents[i], err
 }
 
-func (f *Firestore) MarkMediaAsRestoredInFolder(mediaID string, folderID string) (models.MediaContent, error) {
+func (f *Firestore) MarkMediaAsRestoredInFolder(
+	mediaID string,
+	folderID string,
+) (models.MediaContent, error) {
 	var folder models.Folder
 	folderRef := f.collectionFolders().Doc(folderID)
 	doc, _ := folderRef.Get(context.TODO())
@@ -283,32 +288,104 @@ func (f *Firestore) UpdateMediaInFolder(patch models.MediaContent) (models.Media
 	return media, err
 }
 
-func (f *Firestore) PermanentlyDeleteMedia(folderID string, mediaID string) (models.MediaContent, error) {
+func (f *Firestore) PermanentlyDeleteMedia(
+	folderID string,
+	mediaID string,
+) (models.MediaContent, error) {
 	var content models.MediaContent
-	err := f.client.RunTransaction(f.ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		var folder models.Folder
-		folderDoc := f.collectionFolders().Doc(folderID)
-		folderSnapshot, err := folderDoc.Get(ctx)
-		if err != nil {
+	err := f.client.RunTransaction(
+		f.ctx,
+		func(ctx context.Context, tx *firestore.Transaction) error {
+			var folder models.Folder
+			folderDoc := f.collectionFolders().Doc(folderID)
+			folderSnapshot, err := folderDoc.Get(ctx)
+			if err != nil {
+				return err
+			}
+			err = folderSnapshot.DataTo(&folder)
+			i := slices.IndexFunc(folder.MediaContents, func(media models.MediaContent) bool {
+				return media.ID.ID == mediaID
+			})
+			if i == -1 {
+				return errors.New("not found")
+			}
+			content = folder.MediaContents[i]
+			wihtoutMedia := slices.Delete(folder.MediaContents, i, i+1)
+			err = tx.Update(folderDoc, []firestore.Update{{Path: "media", Value: wihtoutMedia}})
+			if err != nil {
+				return err
+			}
+			tx.Delete(f.collectionMedia().Doc(content.RefID))
 			return err
-		}
-		err = folderSnapshot.DataTo(&folder)
-		i := slices.IndexFunc(folder.MediaContents, func(media models.MediaContent) bool {
-			return media.ID.ID == mediaID
-		})
-		if i == -1 {
-			return errors.New("not found")
-		}
-		fmt.Printf("i: %v\n", i)
-		content = folder.MediaContents[i]
-		wihtoutMedia := slices.Delete(folder.MediaContents, i, i+1)
-		fmt.Printf("wihtoutMedia: %+v\n", wihtoutMedia)
-		err = tx.Update(folderDoc, []firestore.Update{{Path: "media", Value: wihtoutMedia}})
-		if err != nil {
-			return err
-		}
-		tx.Delete(f.collectionMedia().Doc(content.RefID))
-		return err
-	})
+		},
+	)
 	return content, err
+}
+
+func (f *Firestore) PermanentlyDeleteFolder(
+	folderID string,
+) ([]models.MediaContent, error) {
+	media := []models.MediaContent{}
+	err := f.client.RunTransaction(
+		f.ctx,
+		func(ctx context.Context, t *firestore.Transaction) error {
+			m, err := f.permanentlyDeleteFoldedInTransaction(folderID, ctx, t)
+			media = slices.Concat(media, m)
+			return err
+		},
+	)
+	return media, err
+}
+
+func (f *Firestore) permanentlyDeleteFoldedInTransaction(
+	folderID string,
+	ctx context.Context,
+	t *firestore.Transaction,
+) ([]models.MediaContent, error) {
+	media := []models.MediaContent{}
+	// get folder
+	var folder models.Folder
+	folderDoc := f.collectionFolders().Doc(folderID)
+	folderSnapshot, err := folderDoc.Get(ctx)
+	if err != nil {
+		return media, err
+	}
+	err = folderSnapshot.DataTo(&folder)
+	if err != nil {
+		return media, err
+	}
+	media = folder.MediaContents
+	// delete from parent
+	var parent models.Folder
+	parentDoc := f.collectionFolders().Doc(folder.ParentID)
+	parentSnapshot, err := parentDoc.Get(ctx)
+	if err != nil {
+		return media, err
+	}
+	parentSnapshot.DataTo(&parent)
+	i := slices.IndexFunc(parent.FolderContents, func(f models.FolderContent) bool {
+		return f.RefID == folderID
+	})
+	if i == -1 {
+		return media, err
+	}
+	folders := slices.Delete(parent.FolderContents, i, i+1)
+	t.Update(parentDoc, []firestore.Update{{Path: "folders", Value: folders}})
+	// delete media
+	for _, m := range folder.MediaContents {
+		err := t.Delete(f.collectionMedia().Doc(m.RefID))
+		if err != nil {
+			return media, err
+		}
+	}
+	for _, fc := range folder.FolderContents {
+		m, err := f.permanentlyDeleteFoldedInTransaction(fc.RefID, ctx, t)
+		media = slices.Concat(media, m)
+		if err != nil {
+			return media, err
+		}
+	}
+	// delete itself
+	err = t.Delete(folderDoc)
+	return media, err
 }

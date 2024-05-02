@@ -233,10 +233,11 @@ class DeleteForever extends SharedCustomDialog {
   updateForm(data) {
     const base = this.element.getAttribute("data-hx-base");
     this.element.querySelector("#delete-forever-error").innerHTML = "";
-    this.element.setAttribute(
-      "hx-delete",
-      `${base}${data.folderId}/${data.mediaId}`,
-    );
+    let path = `${base}${data.folderId}`;
+    if (data.mediaId) {
+      path += `/${data.mediaId}`;
+    }
+    this.element.setAttribute("hx-delete", path);
     this.element.setAttribute("hx-target", "#content-" + data.id);
   }
 }

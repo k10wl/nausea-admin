@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"nausea-admin/internal/db"
 	"nausea-admin/internal/models"
@@ -18,7 +19,11 @@ type FoldersHandler struct {
 	Storage  storage.Storage
 }
 
-func NewFoldersHandler(db db.DB, template template.Template, storage storage.Storage) FoldersHandler {
+func NewFoldersHandler(
+	db db.DB,
+	template template.Template,
+	storage storage.Storage,
+) FoldersHandler {
 	return FoldersHandler{
 		DB:       db,
 		Template: template,
@@ -269,7 +274,51 @@ func (fh FoldersHandler) DeleteFolderMedia(w http.ResponseWriter, r *http.Reques
 	err = fh.Storage.RemoveObject(fh.Storage.ParseURLKey(content.URL))
 	if err != nil {
 		w.Header().Set("HX-Reswap", "innerHTML")
-		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("failed to remove image from cloud"))
+		utils.ErrorResponse(
+			w,
+			r,
+			http.StatusBadRequest,
+			errors.New("failed to remove image from cloud"),
+		)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (fh FoldersHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
+	folderID := getFolderID(r)
+	contents, err := fh.DB.PermanentlyDeleteFolder(folderID)
+	if err != nil {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("failed to delete folder"))
+		return
+	}
+	echan := make(chan error)
+	wg := sync.WaitGroup{}
+	wg.Add(len(contents))
+	for _, m := range contents {
+		go func() {
+			err := fh.Storage.RemoveObject(fh.Storage.ParseURLKey(m.URL))
+			if err != nil {
+				echan <- err
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	close(echan)
+	errs := []error{}
+	for err := range echan {
+		errs = append(errs, err)
+	}
+	if len(errs) > 0 {
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(
+			w,
+			r,
+			http.StatusBadRequest,
+			errors.New(fmt.Sprintln("failed to remove some objects from storage:", errs)),
+		)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

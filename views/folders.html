@@ -139,6 +139,12 @@
     {{template "list-item-hide"}}
   </button>
   {{end}}
+  <button class="delete-forever" onclick="deleteForever.open({
+      id: '{{.ContentBase.RefID}}',
+      folderId: '{{.ContentBase.RefID}}'
+      })" hx-target-error="next div" title="delete">
+    {{template "list-item-delete"}}
+  </button>
 </div>
 {{template "content-deletable-tail" .}}
 {{end}}

@@ -20,6 +20,7 @@ type IDB interface {
 	GetContacts() (models.Contacts, error)
 	SetContacts(models.Contacts) error
 	PermanentlyDeleteMedia(folderID string, mediaID string) (models.MediaContent, error)
+	PermanentlyDeleteFolder(folderID string) ([]models.MediaContent, error)
 }
 
 type DB struct {
@@ -58,6 +59,10 @@ func (db DB) MarkMediaAsDeletedInFolder(mediaID string, folderID string) (models
 
 func (db DB) PermanentlyDeleteMedia(folderID string, mediaID string) (models.MediaContent, error) {
 	return db.client.PermanentlyDeleteMedia(folderID, mediaID)
+}
+
+func (db DB) PermanentlyDeleteFolder(folderID string) ([]models.MediaContent, error) {
+	return db.client.PermanentlyDeleteFolder(folderID)
 }
 
 func (db DB) MarkMediaAsRestoredInFolder(mediaID string, folderID string) (models.MediaContent, error) {
