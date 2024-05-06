@@ -390,6 +390,23 @@ func (f *Firestore) permanentlyDeleteFoldedInTransaction(
 	return media, err
 }
 
+func (f *Firestore) ReorderFolders(folderID string, from int, to int) error {
+	var folder models.Folder
+	doc := f.collectionFolders().Doc(folderID)
+	snap, err := doc.Get(f.ctx)
+	if err != nil {
+		return err
+	}
+	snap.DataTo(&folder)
+	el := folder.FolderContents[from]
+	removed := slices.Delete(folder.FolderContents, from, from+1)
+	swapped := slices.Insert(removed, to, el)
+	_, err = doc.Update(f.ctx, []firestore.Update{{
+		Path: "folders", Value: swapped,
+	}})
+	return err
+}
+
 func (f *Firestore) ReorderMedia(folderID string, from int, to int) error {
 	var folder models.Folder
 	doc := f.collectionFolders().Doc(folderID)

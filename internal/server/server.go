@@ -46,6 +46,7 @@ func (s *Server) Run() error {
 	mux.HandleFunc("POST /folders/{id}", fh.CreateFolder)
 	mux.HandleFunc("PATCH /folders/{id}", fh.PatchFolder)
 	mux.HandleFunc("DELETE /folders/{id}", fh.DeleteFolder)
+	mux.HandleFunc("POST /folders/{id}/reorder-folders", fh.ReorderFolders)
 	mux.HandleFunc("POST /folders/{id}/reorder-media", fh.ReorderMedia)
 	mux.HandleFunc("PATCH /folders/{id}/hide", fh.MarkFolderAsDeleted)
 	mux.HandleFunc("PATCH /folders/{id}/restore", fh.RestoreFolder)

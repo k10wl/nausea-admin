@@ -21,6 +21,7 @@ type IDB interface {
 	SetContacts(models.Contacts) error
 	PermanentlyDeleteMedia(folderID string, mediaID string) (models.MediaContent, error)
 	PermanentlyDeleteFolder(folderID string) ([]models.MediaContent, error)
+	ReorderFolders(folderID string, from int, to int) error
 	ReorderMedia(folderID string, from int, to int) error
 }
 
@@ -110,6 +111,10 @@ func (db DB) GetContacts() (models.Contacts, error) {
 
 func (db DB) SetContacts(contacts models.Contacts) error {
 	return db.client.SetContacts(contacts)
+}
+
+func (db DB) ReorderFolders(folderID string, from int, to int) error {
+	return db.client.ReorderFolders(folderID, from, to)
 }
 
 func (db DB) ReorderMedia(folderID string, from int, to int) error {

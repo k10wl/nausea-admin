@@ -325,6 +325,19 @@ func (fh FoldersHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (fh FoldersHandler) ReorderFolders(w http.ResponseWriter, r *http.Request) {
+	folderID := getFolderID(r)
+	from, err := strconv.Atoi(r.FormValue("from"))
+	if err != nil {
+		return
+	}
+	to, err := strconv.Atoi(r.FormValue("to"))
+	if err != nil {
+		return
+	}
+	fh.DB.ReorderFolders(folderID, from, to)
+}
+
 func (fh FoldersHandler) ReorderMedia(w http.ResponseWriter, r *http.Request) {
 	folderID := getFolderID(r)
 	from, err := strconv.Atoi(r.FormValue("from"))

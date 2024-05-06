@@ -101,9 +101,11 @@
 
 
 {{define "folder-list"}}
-<li id="content-{{.RefID}}" {{if .DeletedAt}}class="content-deleted" {{end}}>
+<li draggable="true" data-type="folder" ondragstart="folderDragReorder.onDragStart(event)"
+  ondragend="folderDragReorder.onDragEnd(event)" ondragover="folderDragReorder.onDragOver(event)"
+  id="content-{{.RefID}}" {{if .DeletedAt}}class="content-deleted" {{end}}>
   <div class="border-b border-gray p-xs grid gap" style="grid-template-columns: 1fr auto">
-    <a class="text-one-line flex items-center" title="{{.Name}}" href="{{.RefID}}">
+    <a draggable="false" class="text-one-line flex items-center" title="{{.Name}}" href="{{.RefID}}">
       <span class="folder text-one-line"><span>{{.Name}}</span></span>
     </a>
     <div class="flex gap items-center">

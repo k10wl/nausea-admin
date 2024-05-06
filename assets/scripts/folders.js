@@ -373,6 +373,34 @@ function isBefore(el1, el2) {
   return false;
 }
 
+const folderDragReorder = new DragReorder({
+  state: { draggableQuerySelector: "li[data-type='folder']" },
+  events: {
+    onDragStart: (e) => e.target.classList.add("opacity-1/2"),
+    onDragOver: (e) => {
+      if (isBefore(e.state.selected, e.state.over)) {
+        e.state.over.parentNode.insertBefore(e.state.selected, e.state.over);
+        return;
+      }
+      e.state.over.parentNode.insertBefore(
+        e.state.selected,
+        e.state.over.nextSibling,
+      );
+    },
+    onDragEnd: (e) => {
+      e.target.classList.remove("opacity-1/2");
+      if (e.state.from === e.state.to) {
+        return;
+      }
+      htmx.ajax("POST", window.location.pathname + "/reorder-folders", {
+        values: { from: e.state.from, to: e.state.to },
+        target: "none",
+        swap: "none",
+      });
+    },
+  },
+});
+
 const mediaDragReorder = new DragReorder({
   state: { draggableQuerySelector: "li[data-type='media']" },
   events: {
