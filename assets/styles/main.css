@@ -49,7 +49,7 @@
 }
 
 .block {
-  display: block;;
+  display: block;
 }
 
 .items-center {
@@ -166,8 +166,11 @@
   cursor: pointer;
 }
 
-form.htmx-request
-  button[type="submit"]:before {
+.opacity-1\/2 {
+  opacity: 0.5;
+}
+
+form.htmx-request button[type="submit"]:before {
   content: "⏳ ";
   display: inline;
 }

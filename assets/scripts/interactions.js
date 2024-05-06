@@ -2,9 +2,9 @@ function onImageChange(e, selector) {
   if (!(e.currentTarget instanceof HTMLInputElement)) {
     throw new Error("not an input");
   }
-  const target = document.querySelector(selector)
+  const target = document.querySelector(selector);
   if (!(target instanceof HTMLImageElement)) {
-    throw new Error("target is not an image")
+    throw new Error("target is not an image");
   }
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -16,9 +16,9 @@ function onImageChange(e, selector) {
 function dublicateClick(selector) {
   const target = document.querySelector(selector);
   if (!target) {
-    throw new Error("failed to find selector")
+    throw new Error("failed to find selector");
   }
-  target.click()
+  target.click();
 }
 
 function resetFileInput(selector) {

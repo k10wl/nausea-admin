@@ -79,3 +79,11 @@ func filesIntoBucket(
 	}
 	return urls, errs
 }
+
+func getFolderID(r *http.Request) string {
+	folderID := r.PathValue("id")
+	if folderID == "" {
+		folderID = models.RootFolderID
+	}
+	return folderID
+}

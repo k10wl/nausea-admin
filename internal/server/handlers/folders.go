@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"nausea-admin/internal/db"
@@ -324,10 +325,15 @@ func (fh FoldersHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func getFolderID(r *http.Request) string {
-	folderID := r.PathValue("id")
-	if folderID == "" {
-		folderID = models.RootFolderID
+func (fh FoldersHandler) ReorderMedia(w http.ResponseWriter, r *http.Request) {
+	folderID := getFolderID(r)
+	from, err := strconv.Atoi(r.FormValue("from"))
+	if err != nil {
+		return
 	}
-	return folderID
+	to, err := strconv.Atoi(r.FormValue("to"))
+	if err != nil {
+		return
+	}
+	fh.DB.ReorderMedia(folderID, from, to)
 }

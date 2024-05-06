@@ -63,7 +63,7 @@
   <form id="rename-folder-form" data-hx-base="/folders/" hx-patch="/folders/" hx-swap="outerHTML" class="grid gap">
     <label class="grid">Name
       <textarea is="custom-auto-resize" name="name"></textarea>
-    </label class="grid">
+    </label>
     <button type="submit">submit</button>
   </form>
 </custom-dialog>
@@ -72,10 +72,10 @@
   <form id="rename-media-form" data-hx-base="/folders/" hx-patch="" hx-swap="outerHTML" class="grid gap">
     <label class="grid">Name
       <textarea is="custom-auto-resize" name="name"></textarea>
-    </label class="grid">
+    </label>
     <label class="grid">Description
       <textarea is="custom-auto-resize" name="description"></textarea>
-    </label class="grid">
+    </label>
     <button type="submit">submit</button>
   </form>
 </custom-dialog>
@@ -100,96 +100,85 @@
 {{end}}
 
 
-{{define "content-deletable-head"}}
+{{define "folder-list"}}
 <li id="content-{{.RefID}}" {{if .DeletedAt}}class="content-deleted" {{end}}>
   <div class="border-b border-gray p-xs grid gap" style="grid-template-columns: 1fr auto">
-    {{end}}
-
-
-    {{define "content-deletable-tail"}}
+    <a class="text-one-line flex items-center" title="{{.Name}}" href="{{.RefID}}">
+      <span class="folder text-one-line"><span>{{.Name}}</span></span>
+    </a>
+    <div class="flex gap items-center">
+      <button class="rename-folder" type="button" title="edit"
+        onclick="editFolder.open({name: '{{.Name}}', id: '{{.ContentBase.RefID}}'})">
+        edit
+      </button>
+      {{if .DeletedAt}}
+      <button hx-patch="/folders/{{.ContentBase.RefID}}/restore" hx-swap="outerHTML" hx-target="closest li"
+        hx-target-error="next div" title="show">
+        show
+      </button>
+      {{else}}
+      <button hx-patch="/folders/{{.ContentBase.RefID}}/hide" hx-swap="outerHTML" hx-target="closest li"
+        hx-target-error="next div" title="hide">
+        hide
+      </button>
+      {{end}}
+      <button class="delete-forever" onclick="deleteForever.open({
+      id: '{{.ContentBase.RefID}}',
+      folderId: '{{.ContentBase.RefID}}'
+      })" hx-target-error="next div" title="delete">
+        delete
+      </button>
+    </div>
   </div>
   <div class="text-red"></div>
 </li>
 {{end}}
 
-
-{{define "list-item-show"}}show{{end}}
-{{define "list-item-hide"}}hide{{end}}
-{{define "list-item-delete"}}delete{{end}}
-{{define "list-item-edit"}}edit{{end}}
-
-{{define "folder-list"}}
-{{template "content-deletable-head" .}}
-<a class="text-one-line flex items-center" title="{{.Name}}" href="{{.RefID}}">
-  <span class="folder text-one-line"><span>{{.Name}}</span></span>
-</a>
-<div class="flex gap items-center">
-  <button class="rename-folder" type="button" title="edit"
-    onclick="editFolder.open({name: '{{.Name}}', id: '{{.ContentBase.RefID}}'})">
-    {{template "list-item-edit"}}
-  </button>
-  {{if .DeletedAt}}
-  <button hx-patch="/folders/{{.ContentBase.RefID}}/restore" hx-swap="outerHTML" hx-target="closest li"
-    hx-target-error="next div" title="show">
-    {{template "list-item-show"}}
-  </button>
-  {{else}}
-  <button hx-patch="/folders/{{.ContentBase.RefID}}/hide" hx-swap="outerHTML" hx-target="closest li"
-    hx-target-error="next div" title="hide">
-    {{template "list-item-hide"}}
-  </button>
-  {{end}}
-  <button class="delete-forever" onclick="deleteForever.open({
-      id: '{{.ContentBase.RefID}}',
-      folderId: '{{.ContentBase.RefID}}'
-      })" hx-target-error="next div" title="delete">
-    {{template "list-item-delete"}}
-  </button>
-</div>
-{{template "content-deletable-tail" .}}
-{{end}}
-
-
 {{define "media-list"}}
-{{template "content-deletable-head" .}}
-<span class="text-one-line flex gap items-center" title="{{.Name}}" href="{{.RefID}}">
-  <span class="media--container">
-    <custom-scalable class="flex items-center">
-      <img src="{{.URL}}" class="h-full media--image">
-    </custom-scalable>
-  </span>
-  <span class="text-one-line">
-    <span>{{.Name}}</span>{{if .Description}}<span class="text-gray"> | {{.Description}}</span>{{end}}
-  </span>
-</span>
-<div class="flex gap items-center">
-  <button class="rename-media" type="button" title="edit" onclick="editMedia.open({
+<li draggable="true" data-type="media" ondragstart="mediaDragReorder.onDragStart(event)"
+  ondragend="mediaDragReorder.onDragEnd(event)" ondragover="mediaDragReorder.onDragOver(event)" id="content-{{.RefID}}"
+  {{if .DeletedAt}}class="content-deleted" {{end}}>
+  <div class="border-b border-gray p-xs grid gap" style="grid-template-columns: 1fr auto">
+    <span class="text-one-line flex gap items-center" title="{{.Name}}" href="{{.RefID}}">
+      <span class="media--container">
+        <custom-scalable class="flex items-center">
+          <img loading="lazy" draggable="false" src="{{.URL}}" class="h-full media--image">
+        </custom-scalable>
+      </span>
+      <span class="text-one-line">
+        <span>{{.Name}}</span>{{if .Description}}<span class="text-gray"> | {{.Description}}</span>{{end}}
+      </span>
+    </span>
+    <div class="flex gap items-center">
+      <button class="rename-media" type="button" title="edit" onclick="editMedia.open({
       name: '{{.Name}}',
       description: '{{.Description}}',
       mediaId: '{{.ContentBase.ID.ID}}',
       id: '{{.ContentBase.RefID}}',
       folderId: '{{.ParentID}}',
       })">
-    {{template "list-item-edit"}}
-  </button>
-  {{if .DeletedAt}}
-  <button hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore" hx-swap="outerHTML" hx-target="closest li"
-    hx-target-error="next div" title="hide">
-    {{template "list-item-show"}}
-  </button>
-  {{else}}
-  <button hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/hide" hx-swap="outerHTML" hx-target="closest li"
-    hx-target-error="next div" title="show">
-    {{template "list-item-hide"}}
-  </button>
-  {{end}}
-  <button class="delete-forever" onclick="deleteForever.open({
+        edit
+      </button>
+      {{if .DeletedAt}}
+      <button hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/restore" hx-swap="outerHTML"
+        hx-target="closest li" hx-target-error="next div" title="hide">
+        show
+      </button>
+      {{else}}
+      <button hx-patch="/folders/{{.ParentID}}/{{.ContentBase.ID.ID}}/hide" hx-swap="outerHTML" hx-target="closest li"
+        hx-target-error="next div" title="show">
+        hide
+      </button>
+      {{end}}
+      <button class="delete-forever" onclick="deleteForever.open({
       folderId: '{{.ParentID}}',
       id: '{{.ContentBase.RefID}}',
       mediaId: '{{.ContentBase.ID.ID}}',
       })" hx-target-error="next div" title="delete">
-    {{template "list-item-delete"}}
-  </button>
-</div>
-{{template "content-deletable-tail" .}}
+        delete
+      </button>
+    </div>
+  </div>
+  <div class="text-red"></div>
+</li>
 {{end}}

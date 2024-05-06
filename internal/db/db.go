@@ -21,6 +21,7 @@ type IDB interface {
 	SetContacts(models.Contacts) error
 	PermanentlyDeleteMedia(folderID string, mediaID string) (models.MediaContent, error)
 	PermanentlyDeleteFolder(folderID string) ([]models.MediaContent, error)
+	ReorderMedia(folderID string, from int, to int) error
 }
 
 type DB struct {
@@ -53,7 +54,10 @@ func (db DB) UploadMediaToFolder(media []models.MediaContent, folderID string) e
 	return db.client.UploadMediaToFolder(media, folderID)
 }
 
-func (db DB) MarkMediaAsDeletedInFolder(mediaID string, folderID string) (models.MediaContent, error) {
+func (db DB) MarkMediaAsDeletedInFolder(
+	mediaID string,
+	folderID string,
+) (models.MediaContent, error) {
 	return db.client.MarkMediaAsDeletedInFolder(mediaID, folderID)
 }
 
@@ -65,7 +69,10 @@ func (db DB) PermanentlyDeleteFolder(folderID string) ([]models.MediaContent, er
 	return db.client.PermanentlyDeleteFolder(folderID)
 }
 
-func (db DB) MarkMediaAsRestoredInFolder(mediaID string, folderID string) (models.MediaContent, error) {
+func (db DB) MarkMediaAsRestoredInFolder(
+	mediaID string,
+	folderID string,
+) (models.MediaContent, error) {
 	return db.client.MarkMediaAsRestoredInFolder(mediaID, folderID)
 }
 
@@ -103,4 +110,8 @@ func (db DB) GetContacts() (models.Contacts, error) {
 
 func (db DB) SetContacts(contacts models.Contacts) error {
 	return db.client.SetContacts(contacts)
+}
+
+func (db DB) ReorderMedia(folderID string, from int, to int) error {
+	return db.client.ReorderMedia(folderID, from, to)
 }

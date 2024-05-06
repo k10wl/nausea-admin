@@ -249,3 +249,154 @@ const editMedia = new EditMedia(document.getElementById("rename-media-form"));
 const deleteForever = new DeleteForever(
   document.getElementById("delete-forever-form"),
 );
+
+class DragReorder {
+  /** @typedef {(e: DragEvent & {state: State}) => void} DragReoderEvent */
+
+  /** @typedef {Object} DragReorderEvents
+   * @property {DragReoderEvent} [onDragStart]
+   * @property {DragReoderEvent} [onDragOver]
+   * @property {DragReoderEvent} [onDragEnd]
+   */
+
+  /** @typedef {Object} State
+   * @property {string} draggableQuerySelector
+   * @property {HTMLElement | null} selected
+   * @property {HTMLElement | null} over
+   * @property {number} from
+   * @property {number} to
+   */
+
+  /** @type {State} */
+  #state;
+
+  /** @type {DragReorderEvents} */
+  #events;
+
+  /** @param {{state: State, events: DragReorderEvents}} data */
+  constructor(data) {
+    this.#state = {
+      selected: null,
+      over: null,
+      draggableQuerySelector: data.state.draggableQuerySelector,
+      from: -1,
+      to: -1,
+    };
+    this.#events = {
+      onDragStart: data.events.onDragStart,
+      onDragOver: data.events.onDragOver,
+      onDragEnd: data.events.onDragEnd,
+    };
+  }
+
+  /** @param {DragEvent} e */
+  onDragStart(e) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", null);
+    this.#state.selected = e.target;
+    this.#state.over = e.target;
+    const nodeList = document.querySelectorAll(
+      this.#state.draggableQuerySelector,
+    );
+    for (let i = 0; i < nodeList.length; i++) {
+      if (this.#state.selected === nodeList.item(i)) {
+        this.#state.from = i;
+        break;
+      }
+    }
+    this.#state.to = -1;
+    e.state = this.#state;
+    this.#events.onDragStart?.(e);
+  }
+
+  /** @param {DragEvent} e */
+  onDragOver(e) {
+    const over = this.#parentQuerySelector(
+      e.target,
+      this.#state.draggableQuerySelector,
+    );
+    if (!(over instanceof HTMLElement)) {
+      return;
+    }
+    this.#state.over = over;
+    e.state = this.#state;
+    this.#events.onDragOver?.(e);
+  }
+
+  /** @param {DragEvent} e */
+  onDragEnd(e) {
+    const nodeList = document.querySelectorAll(
+      this.#state.draggableQuerySelector,
+    );
+    for (let i = 0; i < nodeList.length; i++) {
+      if (this.#state.selected === nodeList.item(i)) {
+        this.#state.to = i;
+        break;
+      }
+    }
+    e.state = this.#state;
+    this.#events.onDragEnd?.(e);
+    this.#state.selected = null;
+    this.#state.over = null;
+  }
+
+  /**
+   * @param {HTMLElement} element
+   * @param {QueuingStrategyInit} querySelector
+   * @param {number} [maxDepth=100]
+   * @returns {HTMLElement | null}
+   */
+  #parentQuerySelector(element, querySelector, maxDepth = 100) {
+    if (maxDepth === 0) {
+      return null;
+    }
+    if (element === null || element.matches(querySelector)) {
+      return element;
+    }
+    return this.#parentQuerySelector(
+      element.parentNode,
+      querySelector,
+      maxDepth - 1,
+    );
+  }
+}
+
+function isBefore(el1, el2) {
+  let cur;
+  if (el2.parentNode === el1.parentNode) {
+    for (cur = el1.previousSibling; cur; cur = cur.previousSibling) {
+      if (cur === el2) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+const mediaDragReorder = new DragReorder({
+  state: { draggableQuerySelector: "li[data-type='media']" },
+  events: {
+    onDragStart: (e) => e.target.classList.add("opacity-1/2"),
+    onDragOver: (e) => {
+      if (isBefore(e.state.selected, e.state.over)) {
+        e.state.over.parentNode.insertBefore(e.state.selected, e.state.over);
+        return;
+      }
+      e.state.over.parentNode.insertBefore(
+        e.state.selected,
+        e.state.over.nextSibling,
+      );
+    },
+    onDragEnd: (e) => {
+      e.target.classList.remove("opacity-1/2");
+      if (e.state.from === e.state.to) {
+        return;
+      }
+      htmx.ajax("POST", window.location.pathname + "/reorder-media", {
+        values: { from: e.state.from, to: e.state.to },
+        target: "none",
+        swap: "none",
+      });
+    },
+  },
+});
