@@ -20,7 +20,8 @@ type MediaHandler struct {
 }
 
 type urlWithMediaSize struct {
-	URL string
+	URL          string
+	ThumbnailURL string
 	models.MediaSize
 }
 
@@ -54,6 +55,7 @@ func (mh MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	dbDocs := []models.Media{}
 	for _, url := range urls {
 		media, err := models.NewMedia(url.URL, url.MediaSize)
+		media.ThumbnailURL = url.ThumbnailURL
 		if err != nil {
 			failed = append(failed, url.URL)
 			continue

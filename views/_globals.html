@@ -1,44 +1,40 @@
 {{define "_head"}}
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>{{if .Title}}{{.Title}}{{else}}Nausea admin{{end}}</title>
-    <link rel="stylesheet" href="/assets/styles/main.css" />
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.png" />
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="/assets/favicon-dark.png"
-      media="(prefers-color-scheme: dark)"
-    />
-    <script async src="/assets/scripts/storage.js"></script>
-    <script async src="/assets/scripts/interactions.js"></script>
-    <script async src="/assets/scripts/custom-elements.js"></script>
-    <script
-      src="https://unpkg.com/htmx.org@1.9.11"
-      integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
-      crossorigin="anonymous"
-    ></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
-    <style>
-      html {
-        background-color: white;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="grid gap p-md" style="grid-template-columns: 7rem 1fr">
-      {{template "_aside" .}}
-      <main class="p-md overflow-hidden">
-        {{end}}
-        {{/*_main_content_will_get_populated_form_other_templates_(this_comment_makes_prettier_happier)*/}}
-        {{define "_tail"}}
-      </main>
-    </div>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>{{if .Title}}{{.Title}}{{else}}Nausea admin{{end}}</title>
+  <link rel="stylesheet" href="/assets/styles/main.css" />
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.png" />
+  <link rel="icon" type="image/x-icon" href="/assets/favicon-dark.png" media="(prefers-color-scheme: dark)" />
+  <script src="/assets/scripts/storage.js"></script>
+  <script src="/assets/scripts/custom-elements.js"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.11"
+    integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
+    crossorigin="anonymous"></script>
+  <script async src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
+  <script async src="/assets/scripts/interactions.js"></script>
+  <style>
+    html {
+      background-color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid gap p-md" style="grid-template-columns: 7rem 1fr">
+    {{template "_aside" .}}
+    <main class="p-md overflow-hidden">
+      {{end}}
+      {{/*_main_content_will_get_populated_form_other_templates_(this_comment_makes_prettier_happier)*/}}
+      {{define "_tail"}}
+    </main>
+  </div>
+</body>
+
 </html>
 {{end}} {{define "_aside"}}
 <aside class="border-r border-black">
@@ -57,16 +53,19 @@
 {{end}} {{define "_error"}}
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>HTML 5 Boilerplate</title>
-    <link rel="stylesheet" href="assets/styles/main.css" />
-  </head>
-  <body>
-    <h1>Whoops! An error occurred!</h1>
-    <p>{{.Error}}</p>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>HTML 5 Boilerplate</title>
+  <link rel="stylesheet" href="assets/styles/main.css" />
+</head>
+
+<body>
+  <h1>Whoops! An error occurred!</h1>
+  <p>{{.Error}}</p>
+</body>
+
 </html>
 {{end}}

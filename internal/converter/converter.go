@@ -7,8 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"github.com/google/uuid"
 )
 
 type Media struct {
@@ -18,40 +16,52 @@ type Media struct {
 
 const tmpDir = "tmp"
 
-func ToWebp(input io.Reader) (*Media, error) {
+type Opts struct {
+	Input     io.Reader
+	MinWidth  int
+	MinHeight int
+	Quality   int
+	Name      string
+}
+
+func ToWebp(opts Opts) (*Media, error) {
 	err := ensureDir(tmpDir)
 	if err != nil {
 		return nil, err
 	}
 	format := "webp"
-	id, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
-	}
-	name := fmt.Sprintf("%s.%s", id, format)
-	inDir := filepath.Join(".", tmpDir, name)
+	fileName := fmt.Sprintf("%s.%s", opts.Name, format)
+	inDir := filepath.Join(".", tmpDir, fileName)
+	fmt.Printf("inDir: %v\n", inDir)
 	cmd := exec.Command("ffmpeg",
 		"-f", "image2pipe",
 		"-i", "pipe:0",
-		"-vf", "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease",
+		"-vf", fmt.Sprintf(
+			"scale='min(%d,iw)':'min(%d,ih)':force_original_aspect_ratio=decrease",
+			opts.MinWidth,
+			opts.MinHeight,
+		),
 		"-compression_level", "6",
-		"-quality", "80",
+		"-quality", fmt.Sprint(opts.Quality),
 		"-f", format,
-		// i'm not sure why, but the pipe:1 produce corrupted files
+		// I'm not sure why, but the pipe:1 produce corrupted files
 		inDir,
 	)
 	var errBuf bytes.Buffer
-	cmd.Stdin = input
+	cmd.Stdin = opts.Input
 	cmd.Stderr = &errBuf
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
-	cmd.Wait()
+	err = cmd.Wait()
+	if err != nil {
+		return nil, err
+	}
 	reader, err := toBuffer(inDir)
 	if err != nil {
 		return nil, err
 	}
-	return &Media{Reader: reader, Name: name}, err
+	return &Media{Reader: reader, Name: fileName}, err
 }
 
 func ensureDir(name string) error {
@@ -64,9 +74,6 @@ func ensureDir(name string) error {
 
 func toBuffer(name string) (io.Reader, error) {
 	data, err := os.ReadFile(name)
-	if err != nil {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}

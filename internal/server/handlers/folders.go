@@ -272,6 +272,18 @@ func (fh FoldersHandler) DeleteFolderMedia(w http.ResponseWriter, r *http.Reques
 		utils.ErrorResponse(w, r, http.StatusBadRequest, errors.New("failed to update media"))
 		return
 	}
+	err = fh.Storage.RemoveObject(fh.Storage.ParseURLKey(content.ThumbnailURL))
+	if err != nil {
+		fmt.Println(">", err)
+		w.Header().Set("HX-Reswap", "innerHTML")
+		utils.ErrorResponse(
+			w,
+			r,
+			http.StatusBadRequest,
+			errors.New("failed to remove image thumbnail from cloud"),
+		)
+		return
+	}
 	err = fh.Storage.RemoveObject(fh.Storage.ParseURLKey(content.URL))
 	if err != nil {
 		w.Header().Set("HX-Reswap", "innerHTML")
@@ -300,6 +312,10 @@ func (fh FoldersHandler) DeleteFolder(w http.ResponseWriter, r *http.Request) {
 	for _, m := range contents {
 		go func() {
 			err := fh.Storage.RemoveObject(fh.Storage.ParseURLKey(m.URL))
+			if err != nil {
+				echan <- err
+			}
+			err = fh.Storage.RemoveObject(fh.Storage.ParseURLKey(m.ThumbnailURL))
 			if err != nil {
 				echan <- err
 			}

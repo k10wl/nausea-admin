@@ -7,7 +7,8 @@ type MediaSize struct {
 
 type Media struct {
 	ID
-	URL string `firestore:"URL"`
+	URL          string `firestore:"URL"`
+	ThumbnailURL string `firestore:"thumbnailURL"`
 	MediaSize
 	Timestamps
 }
@@ -20,12 +21,13 @@ func NewMedia(URL string, mediaSize MediaSize) (Media, error) {
 
 func (m Media) AsContent(parentID string) (MediaContent, error) {
 	mc := MediaContent{
-		ContentBase: ContentBase{RefID: m.ID.ID, Timestamps: NewTimestamps()},
-		MediaSize:   m.MediaSize,
-		Name:        m.ID.ID,
-		URL:         m.URL,
-		ParentID:    parentID,
-		Description: "",
+		ContentBase:  ContentBase{RefID: m.ID.ID, Timestamps: NewTimestamps()},
+		MediaSize:    m.MediaSize,
+		Name:         m.ID.ID,
+		URL:          m.URL,
+		ThumbnailURL: m.ThumbnailURL,
+		ParentID:     parentID,
+		Description:  "",
 	}
 	err := mc.generateID()
 	return mc, err

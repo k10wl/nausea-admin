@@ -1,5 +1,6 @@
 {{define "/folders"}}
 {{template "_head" .}}
+<link rel="stylesheet" type="text/css" href="/assets/styles/folders.css">
 <div hx-ext="response-targets">
   <div class="sticky top-0 flex items-center gap border-b py-md bg-white">
     <h2 id="folder-name" class="mr-md">{{.Props.Folder.Name}}</h2>
@@ -90,7 +91,6 @@
 </custom-dialog>
 
 <script async src="/assets/scripts/folders.js"></script>
-<link rel="stylesheet" type="text/css" href="/assets/styles/folders.css">
 {{template "_tail"}}
 {{end}}
 
@@ -143,8 +143,8 @@
   <div class="border-b border-gray p-xs grid gap" style="grid-template-columns: 1fr auto">
     <span class="text-one-line flex gap items-center" title="{{.Name}}" href="{{.RefID}}">
       <span class="media--container">
-        <custom-scalable class="flex items-center">
-          <img loading="lazy" draggable="false" src="{{.URL}}" class="h-full media--image">
+        <custom-scalable src="{{.URL}}" class="flex items-center">
+          <img loading="lazy" draggable="false" src="{{.ThumbnailURL}}" class="h-full media--image">
         </custom-scalable>
       </span>
       <span class="text-one-line">

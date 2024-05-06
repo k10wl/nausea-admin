@@ -119,6 +119,7 @@ customElements.define(
       super();
       const root = this.attachShadow({ mode: "open" });
       const img = document.createElement("img");
+      img.loading = "lazy";
       this.getAttributeNames().forEach((name) =>
         img.setAttribute(name, this.getAttribute(name)),
       );
@@ -126,10 +127,14 @@ customElements.define(
       const slot = document.createElement("slot");
       container.appendChild(slot);
       slot.addEventListener("slotchange", () => {
-        slot.assignedElements()[0].addEventListener("click", () => {
+        const [el] = slot.assignedElements();
+        let prevSrc = el.src;
+        el.addEventListener("click", () => {
           if (container.classList.toggle("expanded")) {
+            el.src = this.getAttribute("src");
             document.body.style.setProperty("overflow", "hidden", "important");
           } else {
+            el.src = prevSrc;
             document.body.style.removeProperty("overflow");
           }
         });
@@ -159,25 +164,24 @@ customElements.define(
     static observedAttributes = ["textContent"];
 
     constructor() {
-      super()
-      this.updateHeight = this.updateHeight.bind(this)
+      super();
+      this.updateHeight = this.updateHeight.bind(this);
     }
 
     connectedCallback() {
-      this.style.overflow = "hidden"
-      this.addEventListener('input', this.updateHeight)
-      this.updateHeight()
+      this.style.overflow = "hidden";
+      this.addEventListener("input", this.updateHeight);
+      this.updateHeight();
     }
 
     updateHeight() {
-    // aight, this is weird, but without timeout it does not update properly
-    // I have neither no idea why the fuck it does that nor time to figure out
+      // aight, this is weird, but without timeout it does not update properly
+      // I have neither no idea why the fuck it does that nor time to figure out
       setTimeout(() => {
-        this.style.height = '1px'
-        this.style.height = `${this.scrollHeight}px`
-      })
+        this.style.height = "1px";
+        this.style.height = `${this.scrollHeight}px`;
+      });
     }
-
   },
-  {extends: "textarea"}
-)
+  { extends: "textarea" },
+);

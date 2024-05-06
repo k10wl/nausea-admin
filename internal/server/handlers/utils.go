@@ -1,13 +1,17 @@
 package handlers
 
 import (
+	"bytes"
+	"fmt"
 	"io"
+
 	"mime/multipart"
 	"net/http"
 
 	"nausea-admin/internal/converter"
 	"nausea-admin/internal/models"
 
+	"github.com/google/uuid"
 	"golang.org/x/image/webp"
 )
 
@@ -27,10 +31,39 @@ func processFile(
 		return
 	}
 	defer file.Close()
-	media, err := converter.ToWebp(file)
+	var buf bytes.Buffer
+	tee := io.TeeReader(file, &buf)
+	id, err := uuid.NewUUID()
 	if err != nil {
 		errChan <- err
 		return
+	}
+	uniqName := id.String()
+	media, err := converter.ToWebp(
+		converter.Opts{
+			Input:     tee,
+			Name:      uniqName,
+			MinWidth:  1920,
+			MinHeight: 1080,
+			Quality:   80,
+		})
+	fmt.Printf("media: %v\n", media)
+	if err != nil {
+		errChan <- err
+		return
+	}
+	thumbnail, err := converter.ToWebp(
+		converter.Opts{
+			Input:     &buf,
+			Name:      uniqName + "-thumbnail",
+			MinWidth:  480,
+			MinHeight: 360,
+			Quality:   60,
+		})
+	fmt.Printf("thumbnail: %v\n", thumbnail)
+	fmt.Printf("err: %v\n", err)
+	if err != nil {
+		errChan <- err
 	}
 	img, err := webp.DecodeConfig(media.Reader)
 	if err != nil {
@@ -41,8 +74,14 @@ func processFile(
 	if err != nil {
 		errChan <- err
 	}
+	thumbnailURL, err := uploader(thumbnail.Reader, thumbnail.Name)
+	if err != nil {
+		errChan <- err
+	}
+	fmt.Printf("thumbnailURL: %v\n", thumbnailURL)
 	urlChan <- urlWithMediaSize{
-		URL: url,
+		URL:          url,
+		ThumbnailURL: thumbnailURL,
 		MediaSize: models.MediaSize{
 			Width:  img.Width,
 			Height: img.Height,

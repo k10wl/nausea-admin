@@ -34,10 +34,11 @@ type FolderContent struct {
 type MediaContent struct {
 	ContentBase
 	MediaSize
-	URL         string `firestore:"URL"`
-	Name        string `firestore:"name"`
-	ParentID    string `firestore:"parentID"`
-	Description string `firestore:"description"`
+	URL          string `firestore:"URL"`
+	ThumbnailURL string `firestore:"thumbnailURL"`
+	Name         string `firestore:"name"`
+	ParentID     string `firestore:"parentID"`
+	Description  string `firestore:"description"`
 }
 
 func NewFolder(parentID string, name string) (*Folder, error) {
