@@ -59,6 +59,7 @@ func (h *MetaHandler) PutMeta(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	media, err := models.NewMedia(urls[0].URL, urls[0].MediaSize)
+	media.ThumbnailURL = urls[0].ThumbnailURL
 	if err != nil {
 		w.Header().Set("HX-Reswap", "innerHTML")
 		utils.ErrorResponse(w, r, http.StatusInternalServerError, err)

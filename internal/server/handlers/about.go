@@ -56,21 +56,22 @@ func (h AboutHandler) PatchAbout(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		img, err := models.NewMedia(url[0].URL, url[0].MediaSize)
+		img.ThumbnailURL = url[0].ThumbnailURL
 		if err != nil {
 			w.Header().Set("HX-Reswap", "innerHTML")
 			utils.ErrorResponse(w, r, http.StatusInternalServerError, err)
 			return
 		}
 		patch.Image = &img
-	}
-	patch.Update()
-	prevUrl := r.MultipartForm.Value["prev-image-url"][0]
-	if prevUrl != "" {
-		err := h.Storage.RemoveObject(h.Storage.ParseURLKey(prevUrl))
-		if err != nil {
-			fmt.Println("Failed to remove prev image", err)
+		prevUrl := r.MultipartForm.Value["prev-image-url"][0]
+		if prevUrl != "" {
+			err := h.Storage.RemoveObject(h.Storage.ParseURLKey(prevUrl))
+			if err != nil {
+				fmt.Println("Failed to remove prev image", err)
+			}
 		}
 	}
+	patch.Update()
 	err = h.DB.SetAbout(patch)
 	if err != nil {
 		w.Header().Set("HX-Reswap", "innerHTML")
