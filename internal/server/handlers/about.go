@@ -65,6 +65,7 @@ func (h AboutHandler) PatchAbout(w http.ResponseWriter, r *http.Request) {
 		patch.Image = &img
 		prevUrl := r.MultipartForm.Value["prev-image-url"][0]
 		if prevUrl != "" {
+			// todo remove thumbnail
 			err := h.Storage.RemoveObject(h.Storage.ParseURLKey(prevUrl))
 			if err != nil {
 				fmt.Println("Failed to remove prev image", err)
